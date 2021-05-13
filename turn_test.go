@@ -40,7 +40,23 @@ func TestTurn(t *testing.T) {
 			t.Errorf("got %v want %v for spoils of war", turn.SpoilsOfWar, []Card{})
 		}
 	})
-	// player1, player2, spoilsOfWar
+
+	t.Run("basic type", func(t *testing.T) {
+		turn := Turn{player1, player2, []Card{}}
+
+		if turn.Type() != "basic" {
+			t.Errorf("got %q want %q for turn type", turn.Type(), "basic")
+		}
+	})
+
+	t.Run("winner", func(t *testing.T) {
+		turn := Turn{player1, player2, []Card{}}
+
+		winner := turn.Winner()
+		if winner != player1 {
+			t.Errorf("got %v want %v for winner", winner, player1)
+		}
+	})
 	// type: basic, war, or mutuallyAssuredDestruction
 	// winner
 	// pile cards
