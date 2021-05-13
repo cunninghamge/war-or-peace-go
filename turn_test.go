@@ -41,20 +41,35 @@ func TestTurn(t *testing.T) {
 		}
 	})
 
-	t.Run("basic type", func(t *testing.T) {
+	t.Run("basic turn", func(t *testing.T) {
 		turn := Turn{player1, player2, []Card{}}
 
 		if turn.Type() != "basic" {
 			t.Errorf("got %q want %q for turn type", turn.Type(), "basic")
 		}
-	})
-
-	t.Run("winner", func(t *testing.T) {
-		turn := Turn{player1, player2, []Card{}}
 
 		winner := turn.Winner()
 		if winner != player1 {
 			t.Errorf("got %v want %v for winner", winner, player1)
+		}
+
+		turn.PileCards()
+		got := turn.SpoilsOfWar
+		want := []Card{card1, card3}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for spoils of war", got, want)
+		}
+
+		got = player1.Deck.Cards
+		want = []Card{card2, card5, card8, card1, card3}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for player 1 cards", got, want)
+		}
+
+		got = player2.Deck.Cards
+		want = []Card{card4, card6, card7}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for player 2 cards", got, want)
 		}
 	})
 	// type: basic, war, or mutuallyAssuredDestruction
