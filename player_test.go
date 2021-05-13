@@ -25,7 +25,7 @@ func TestPlayer(t *testing.T) {
 	})
 
 	t.Run("player loses when they run out of cards", func(t *testing.T) {
-		for i := 0; i < len(deck.Cards); i++ {
+		for i := 0; i < 3; i++ {
 			if player.HasLost() {
 				t.Errorf("player has lost but still has cards")
 			}
