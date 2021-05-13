@@ -39,3 +39,7 @@ func (d *Deck) RemoveCard() Card {
 	d.Cards = d.Cards[1:]
 	return card
 }
+
+func (d *Deck) AddCard(card Card) {
+	d.Cards = append(d.Cards, card)
+}
