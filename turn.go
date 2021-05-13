@@ -6,15 +6,29 @@ type Turn struct {
 }
 
 func (t Turn) Type() string {
-
+	if t.Player1.Deck.RankofCardAt(0) == t.Player2.Deck.RankofCardAt(0) {
+		return "war"
+	}
 	return "basic"
 }
 
 func (t Turn) Winner() Player {
-	if t.Player1.Deck.RankofCardAt(0) > t.Player2.Deck.RankofCardAt(0) {
-		return t.Player1
+	switch t.Type() {
+	case "basic":
+		if t.Player1.Deck.RankofCardAt(0) > t.Player2.Deck.RankofCardAt(0) {
+			return t.Player1
+		} else {
+			return t.Player2
+		}
+	case "war":
+		if t.Player1.Deck.RankofCardAt(2) > t.Player2.Deck.RankofCardAt(2) {
+			return t.Player1
+		} else {
+			return t.Player2
+		}
 	}
-	return t.Player2
+
+	return Player{Name: "No Winner"}
 }
 
 func (t *Turn) PileCards() {
