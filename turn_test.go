@@ -86,25 +86,24 @@ func TestTurn(t *testing.T) {
 			t.Errorf("got %v want %v for winner", winner, player2)
 		}
 
-		// turn.PileCards()
-		// got := turn.SpoilsOfWar
-		// want := []Card{card1, card3}
-		// if !reflect.DeepEqual(got, want) {
-		// 	t.Errorf("got %v want %v for spoils of war", got, want)
-		// }
+		turn.PileCards()
+		got := turn.SpoilsOfWar
+		want := []Card{card2, card4, card5, card6, card8, card7}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for spoils of war", got, want)
+		}
 
-		// turn.AwardSpoils(winner)
-		// got = player1.Deck.Cards
-		// want = []Card{card2, card5, card8, card1, card3}
-		// if !reflect.DeepEqual(got, want) {
-		// 	t.Errorf("got %v want %v for player 1 cards", got, want)
-		// }
+		turn.AwardSpoils(winner)
+		got = player2.Deck.Cards
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for player 1 cards", got, want)
+		}
 
-		// got = player2.Deck.Cards
-		// want = []Card{card4, card6, card7}
-		// if !reflect.DeepEqual(got, want) {
-		// 	t.Errorf("got %v want %v for player 2 cards", got, want)
-		// }
+		got = player1.Deck.Cards
+		want = []Card{card1, card3}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for player 2 cards", got, want)
+		}
 	})
 	// type: basic, war, or mutuallyAssuredDestruction
 	// winner
