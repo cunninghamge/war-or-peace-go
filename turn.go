@@ -16,3 +16,14 @@ func (t Turn) Winner() Player {
 	}
 	return t.Player2
 }
+
+func (t *Turn) PileCards() {
+	t.SpoilsOfWar = append(t.SpoilsOfWar, t.Player1.Deck.RemoveCard())
+	t.SpoilsOfWar = append(t.SpoilsOfWar, t.Player2.Deck.RemoveCard())
+}
+
+func (t Turn) AwardSpoils(winner Player) {
+	for _, card := range t.SpoilsOfWar {
+		winner.Deck.AddCard(card)
+	}
+}

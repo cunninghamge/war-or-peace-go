@@ -42,7 +42,7 @@ func TestTurn(t *testing.T) {
 	})
 
 	t.Run("basic turn", func(t *testing.T) {
-		turn := Turn{player1, player2, []Card{}}
+		turn := &Turn{player1, player2, []Card{}}
 
 		if turn.Type() != "basic" {
 			t.Errorf("got %q want %q for turn type", turn.Type(), "basic")
@@ -60,6 +60,7 @@ func TestTurn(t *testing.T) {
 			t.Errorf("got %v want %v for spoils of war", got, want)
 		}
 
+		turn.AwardSpoils(winner)
 		got = player1.Deck.Cards
 		want = []Card{card2, card5, card8, card1, card3}
 		if !reflect.DeepEqual(got, want) {
