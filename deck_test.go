@@ -25,6 +25,30 @@ func TestCard(t *testing.T) {
 	}
 }
 
+func TestString(t *testing.T) {
+	card1 := Card{"diamond", "Queen", 12}
+	card2 := Card{"spade", "3", 3}
+	card3 := Card{"heart", "Ace", 14}
+
+	got := card1.String()
+	want := "the Queen of diamonds"
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
+
+	got = card2.String()
+	want = "the 3 of spades"
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
+
+	got = card3.String()
+	want = "the Ace of hearts"
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
+}
+
 func TestDeck(t *testing.T) {
 	card1 := Card{"diamond", "Queen", 12}
 	card2 := Card{"spade", "3", 3}

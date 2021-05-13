@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -8,6 +9,10 @@ type Card struct {
 	Suit  string
 	Value string
 	Rank  int
+}
+
+func (c Card) String() string {
+	return fmt.Sprintf("the %s of %ss", c.Value, c.Suit)
 }
 
 type Deck struct {
