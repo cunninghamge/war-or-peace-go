@@ -47,7 +47,6 @@ func (t *Turn) PileCards() {
 			t.Player1.Deck.RemoveCard()
 			t.Player2.Deck.RemoveCard()
 		}
-		break
 	}
 
 	for i := 0; i < numCards; i++ {
