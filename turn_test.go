@@ -9,9 +9,9 @@ func TestTurn(t *testing.T) {
 	card1 := Card{"heart", "Jack", 11}
 	card2 := Card{"heart", "10", 10}
 	card3 := Card{"heart", "9", 9}
-	card4 := Card{"diamond", "Jack", 10}
+	card4 := Card{"diamond", "10", 10}
 	card5 := Card{"heart", "8", 8}
-	card6 := Card{"diamond", "Queen", 12}
+	card6 := Card{"diamond", "8", 8}
 	card7 := Card{"heart", "3", 3}
 	card8 := Card{"diamond", "2", 2}
 
@@ -105,8 +105,39 @@ func TestTurn(t *testing.T) {
 			t.Errorf("got %v want %v for player 2 cards", got, want)
 		}
 	})
-	// type: basic, war, or mutuallyAssuredDestruction
-	// winner
-	// pile cards
-	// award spoils
+
+	t.Run("mutually assured destruction turn", func(t *testing.T) {
+		player1.Deck.Cards = []Card{card2, card1, card5, card8}
+		player2.Deck.Cards = []Card{card4, card3, card6, card7}
+
+		turn := &Turn{player1, player2, []Card{}}
+
+		if turn.Type() != "mutually assured destruction" {
+			t.Errorf("got %q want %q for turn type", turn.Type(), "mutually assured destruction")
+		}
+
+		winner := turn.Winner()
+		if winner.Name != "No Winner" {
+			t.Errorf("got %v want %v for winner", winner, Player{Name: "No Winner"})
+		}
+
+		turn.PileCards()
+		got := turn.SpoilsOfWar
+		want := []Card{}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for spoils of war", got, want)
+		}
+
+		got = player1.Deck.Cards
+		want = []Card{card8}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for player 1 cards", got, want)
+		}
+
+		got = player2.Deck.Cards
+		want = []Card{card7}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v want %v for player 2 cards", got, want)
+		}
+	})
 }
