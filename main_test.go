@@ -76,5 +76,36 @@ func TestDeck(t *testing.T) {
 		if !reflect.DeepEqual(deck.Cards, want) {
 			t.Errorf("%v should have been removed from deck but was not", card1)
 		}
+
+		got := deck.HighRankingCards()
+		if !reflect.DeepEqual(got, []Card{card3}) {
+			t.Errorf("got %v want %v for new high ranking cards", got, []Card{card3})
+		}
+
+		newPct := deck.PercentHighRanking()
+		if newPct != 50.00 {
+			t.Errorf("newPct %f want %f for new percent high ranking", newPct, 50.00)
+		}
+	})
+
+	t.Run("deck.AddCard", func(t *testing.T) {
+		card4 := Card{"club", "5", 5}
+
+		deck.AddCard(card4)
+
+		want := []Card{card2, card3, card4}
+		if !reflect.DeepEqual(deck.Cards, want) {
+			t.Errorf("got %v want %v for deck after adding new card", deck.Cards, want)
+		}
+
+		got := deck.HighRankingCards()
+		if !reflect.DeepEqual(got, []Card{card3}) {
+			t.Errorf("got %v want %v for new high ranking cards", got, []Card{card3})
+		}
+
+		newPct := deck.PercentHighRanking()
+		if newPct != 33.33 {
+			t.Errorf("newPct %f want %f for new percent high ranking", newPct, 33.33)
+		}
 	})
 }
