@@ -41,12 +41,12 @@ func TestDeck(t *testing.T) {
 	})
 
 	t.Run("deck.RankofCardAt", func(t *testing.T) {
-		if deck.RankofCardAt(0) != card1 {
-			t.Errorf("got %v want %v for rank of card at 0", deck.RankofCardAt(0), card1)
+		if deck.RankofCardAt(0) != card1.Rank {
+			t.Errorf("got %v want %v for rank of card at 0", deck.RankofCardAt(0), card1.Rank)
 		}
 
-		if deck.RankofCardAt(2) != card3 {
-			t.Errorf("got %v want %v for rank of card at 2", deck.RankofCardAt(2), card3)
+		if deck.RankofCardAt(2) != card3.Rank {
+			t.Errorf("got %v want %v for rank of card at 2", deck.RankofCardAt(2), card3.Rank)
 		}
 	})
 

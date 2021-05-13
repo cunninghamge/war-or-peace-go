@@ -14,8 +14,8 @@ type Deck struct {
 	Cards []Card
 }
 
-func (d Deck) RankofCardAt(index int) Card {
-	return d.Cards[index]
+func (d Deck) RankofCardAt(index int) int {
+	return d.Cards[index].Rank
 }
 
 func (d Deck) HighRankingCards() []Card {
