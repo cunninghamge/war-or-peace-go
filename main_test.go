@@ -25,11 +25,11 @@ func TestCard(t *testing.T) {
 	}
 }
 
-func TestDeckCards(t *testing.T) {
+func TestDeck(t *testing.T) {
 	card1 := Card{"diamond", "Queen", 12}
 	card2 := Card{"spade", "3", 3}
 	card3 := Card{"heart", "Ace", 14}
-	deck := Deck{
+	deck := &Deck{
 		[]Card{card1, card2, card3},
 	}
 
@@ -70,6 +70,11 @@ func TestDeckCards(t *testing.T) {
 		removed := deck.RemoveCard()
 		if removed != card1 {
 			t.Errorf("got %v want %v for remove card", removed, card1)
+		}
+
+		want := []Card{card2, card3}
+		if !reflect.DeepEqual(deck.Cards, want) {
+			t.Errorf("%v should have been removed from deck but was not", card1)
 		}
 	})
 }
