@@ -23,5 +23,17 @@ func TestPlayer(t *testing.T) {
 			t.Errorf("got %v, want %v for player deck", player.Deck, deck)
 		}
 	})
-	// t.Run("hasLost")
+
+	t.Run("player loses when they run out of cards", func(t *testing.T) {
+		for i := 0; i < len(deck.Cards); i++ {
+			if player.HasLost() {
+				t.Errorf("player has lost but still has cards")
+			}
+			player.Deck.RemoveCard()
+		}
+
+		if !player.HasLost() {
+			t.Errorf("player has not lost but has no cards")
+		}
+	})
 }
