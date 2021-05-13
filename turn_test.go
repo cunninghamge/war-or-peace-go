@@ -26,7 +26,7 @@ func TestTurn(t *testing.T) {
 	player2 := Player{"Aurora", deck2}
 
 	t.Run("attributes", func(t *testing.T) {
-		turn := Turn{player1, player2}
+		turn := Turn{player1, player2, []Card{}}
 
 		if turn.Player1 != player1 {
 			t.Errorf("got %v want %v for player1", turn.Player1, player1)
