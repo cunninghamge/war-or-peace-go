@@ -1,5 +1,9 @@
 package main
 
+import (
+	"os"
+)
+
 func main() {
-	Start()
+	Start(os.Args[1])
 }

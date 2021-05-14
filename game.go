@@ -1,19 +1,25 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
 	"math/rand"
+	"os"
+	"strconv"
 	"time"
 )
 
-func Start() {
-	player1, player2 := NewPlayers()
+func Start(filename string) {
+	// cards := NewDeck()
+	cards := NewDeckFromCSV(filename)
+	player1, player2 := NewPlayers(cards)
 	fmt.Println("Welcome to War! (or Peace) This game wil be played with 52 cards.")
 	fmt.Printf("The players today are %s and %s.\n", player1.Name, player2.Name)
 	fmt.Println("Type 'GO' to start the game!")
 	fmt.Println("-----------------------------------------------------------------")
 
-	for i := 1; i < 10_000; i++ {
+	for i := 1; i <= 10; i++ {
 		PlayTurn(player1, player2, i)
 
 		gameOver := GameOver(player1, player2, i)
@@ -23,8 +29,13 @@ func Start() {
 	}
 }
 
-func NewPlayers() (Player, Player) {
-	cards := NewDeck()
+func NewPlayers(cards []Card) (Player, Player) {
+	// shuffle cards
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	for i := len(cards); i > 0; i-- {
+		randIndex := r.Intn(i)
+		cards[i-1], cards[randIndex] = cards[randIndex], cards[i-1]
+	}
 	return Player{"Cacco", &Deck{cards[:26]}}, Player{"Pickles", &Deck{cards[26:]}}
 }
 
@@ -53,11 +64,21 @@ func NewDeck() []Card {
 		}
 	}
 
-	// shuffle cards
-	r := rand.New(rand.NewSource(time.Now().Unix()))
-	for i := len(cards); i > 0; i-- {
-		randIndex := r.Intn(i)
-		cards[i-1], cards[randIndex] = cards[randIndex], cards[i-1]
+	return cards
+}
+
+func NewDeckFromCSV(filename string) []Card {
+	file, _ := os.Open(filename)
+	r := csv.NewReader(file)
+
+	var cards []Card
+	for {
+		record, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		rank, _ := strconv.Atoi(record[2])
+		cards = append(cards, Card{record[1], record[0], rank})
 	}
 
 	return cards
@@ -131,7 +152,7 @@ func GameOver(player1, player2 Player, i int) bool {
 	l1 := len(player1.Deck.Cards)
 	l2 := len(player2.Deck.Cards)
 	fmt.Printf("   %s has %d cards and %s has %d cards\n", player1.Name, l1, player2.Name, l2)
-	if i == 9_999 {
+	if i == 10_000 {
 		fmt.Printf("Maxiumum turns exceeded.\nGame Over!")
 	}
 	return false

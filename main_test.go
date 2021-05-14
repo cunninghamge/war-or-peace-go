@@ -36,7 +36,8 @@ func TestNewDeck(t *testing.T) {
 }
 
 func TestNewPlayers(t *testing.T) {
-	player1, player2 := NewPlayers()
+	cards := NewDeck()
+	player1, player2 := NewPlayers(cards)
 
 	if player1.Name != "Cacco" {
 		t.Errorf("got %q want %q for player1 name", player1.Name, "Cacco")
