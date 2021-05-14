@@ -14,69 +14,18 @@ func Start() {
 	fmt.Println("-----------------------------------------------------------------")
 
 	for i := 1; i < 10_000; i++ {
-		turn := &Turn{player1, player2, []Card{}}
-		p1 := player1.Name
-		p2 := player2.Name
-		c1 := player1.Deck.Cards[0].String()
-		c2 := player2.Deck.Cards[0].String()
-		fmt.Printf("Turn %d: %s played %s, and %s played %s\n", i, p1, c1, p2, c2)
+		PlayTurn(player1, player2, i)
 
-		turnType := turn.Type()
-		winner := turn.Winner()
-
-		switch turnType {
-		case "basic":
-			turn.PileCards()
-			fmt.Printf("   %s won 2 cards\n", winner.Name)
-			turn.AwardSpoils(winner)
-		case "war":
-			if len(player2.Deck.Cards) > 2 && len(player1.Deck.Cards) > 2 {
-				c1 = player1.Deck.Cards[2].String()
-				c2 = player2.Deck.Cards[2].String()
-				turn.PileCards()
-				fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
-				fmt.Printf("   %s won 6 cards\n", winner.Name)
-				turn.PileCards()
-				turn.AwardSpoils(winner)
-			} else if len(player2.Deck.Cards) < 3 {
-				fmt.Printf("   WAR - %s doesn't have enough cards\n", p2)
-				turn.PileCards()
-			} else if len(player1.Deck.Cards) < 3 {
-				fmt.Printf("   WAR - %s doesn't have enough cards\n", p1)
-				turn.PileCards()
-			}
-		case "mutually assured destruction":
-			if len(player2.Deck.Cards) > 2 && len(player1.Deck.Cards) > 2 {
-				c1 = player1.Deck.Cards[2].String()
-				c2 = player2.Deck.Cards[2].String()
-				turn.PileCards()
-				fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
-				fmt.Println("   *mutually assured destruction* 6 cards removed from play")
-				turn.PileCards()
-			} else if len(player2.Deck.Cards) < 3 {
-				fmt.Printf("   WAR - %s doesn't have enough cards\n", p2)
-				turn.PileCards()
-			} else if len(player1.Deck.Cards) < 3 {
-				fmt.Printf("   WAR - %s doesn't have enough cards\n", p1)
-				turn.PileCards()
-			}
-		}
-
-		if player1.HasLost() {
-			fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", p2)
+		gameOver := GameOver(player1, player2, i)
+		if gameOver {
 			break
-		}
-		if player2.HasLost() {
-			fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", p1)
-			break
-		}
-		l1 := len(player1.Deck.Cards)
-		l2 := len(player2.Deck.Cards)
-		fmt.Printf("   %s has %d cards and %s has %d cards\n", p1, l1, p2, l2)
-		if i == 9_999 {
-			fmt.Printf("maxiumum turns exceeded\nGame Over!")
 		}
 	}
+}
+
+func NewPlayers() (Player, Player) {
+	cards := NewDeck()
+	return Player{"Cacco", &Deck{cards[:26]}}, Player{"Pickles", &Deck{cards[26:]}}
 }
 
 func NewDeck() []Card {
@@ -114,7 +63,76 @@ func NewDeck() []Card {
 	return cards
 }
 
-func NewPlayers() (Player, Player) {
-	cards := NewDeck()
-	return Player{"Cacco", &Deck{cards[:26]}}, Player{"Pickles", &Deck{cards[26:]}}
+func PlayTurn(player1, player2 Player, i int) {
+	t := &Turn{player1, player2, []Card{}}
+	p1 := t.Player1.Name
+	p2 := t.Player2.Name
+	c1 := t.Player1.Deck.Cards[0].String()
+	c2 := t.Player2.Deck.Cards[0].String()
+	fmt.Printf("Turn %d: %s played %s, and %s played %s\n", i, p1, c1, p2, c2)
+
+	switch t.Type() {
+	case "basic":
+		BasicTurn(t)
+	case "war":
+		WarTurn(t)
+	case "mutually assured destruction":
+		MADTurn(t)
+	}
+}
+
+func BasicTurn(t *Turn) {
+	winner := t.Winner()
+	fmt.Printf("   %s won 2 cards\n", winner.Name)
+	t.PileCards()
+	t.AwardSpoils(winner)
+}
+
+func WarTurn(t *Turn) {
+	p1 := t.Player1.Name
+	p2 := t.Player2.Name
+	winner := t.Winner()
+	if len(t.Player2.Deck.Cards) < 3 {
+		fmt.Printf("   WAR - %s doesn't have enough cards!\n", p2)
+		t.PileCards()
+	} else if len(t.Player1.Deck.Cards) < 3 {
+		fmt.Printf("   WAR - %s doesn't have enough cards!\n", p1)
+		t.PileCards()
+	} else {
+		c1 := t.Player1.Deck.Cards[2].String()
+		c2 := t.Player2.Deck.Cards[2].String()
+		fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
+		fmt.Printf("   %s won 6 cards\n", winner.Name)
+		t.PileCards()
+		t.AwardSpoils(winner)
+	}
+}
+
+func MADTurn(t *Turn) {
+	p1 := t.Player1.Name
+	p2 := t.Player2.Name
+	c1 := t.Player1.Deck.Cards[2].String()
+	c2 := t.Player2.Deck.Cards[2].String()
+	t.PileCards()
+	fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
+	fmt.Println("   *mutually assured destruction* 6 cards removed from play")
+}
+
+func GameOver(player1, player2 Player, i int) bool {
+	if player1.HasLost() {
+		fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", player2.Name)
+		return true
+	}
+	if player2.HasLost() {
+		fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", player1.Name)
+		return true
+	}
+
+	l1 := len(player1.Deck.Cards)
+	l2 := len(player2.Deck.Cards)
+	fmt.Printf("   %s has %d cards and %s has %d cards\n", player1.Name, l1, player2.Name, l2)
+	if i == 9_999 {
+		fmt.Printf("Maxiumum turns exceeded.\nGame Over!")
+	}
+	return false
 }
