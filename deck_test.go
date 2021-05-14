@@ -65,12 +65,27 @@ func TestDeck(t *testing.T) {
 	})
 
 	t.Run("deck.RankofCardAt", func(t *testing.T) {
-		if deck.RankofCardAt(0) != card1.Rank {
-			t.Errorf("got %v want %v for rank of card at 0", deck.RankofCardAt(0), card1.Rank)
+		rank, err := deck.RankofCardAt(0)
+		if rank != card1.Rank {
+			t.Errorf("got %v want %v for rank of card at 0", rank, card1.Rank)
+		}
+		if err != nil {
+			t.Errorf("did not expect an error but got one")
 		}
 
-		if deck.RankofCardAt(2) != card3.Rank {
-			t.Errorf("got %v want %v for rank of card at 2", deck.RankofCardAt(2), card3.Rank)
+		rank, err = deck.RankofCardAt(2)
+		if rank != card3.Rank {
+			t.Errorf("got %v want %v for rank of card at 2", rank, card3.Rank)
+		}
+		if err != nil {
+			t.Errorf("did not expect an error but got one")
+		}
+	})
+
+	t.Run("RankofCardAt returns error if not enough cards", func(t *testing.T) {
+		_, err := deck.RankofCardAt(5)
+		if err == nil {
+			t.Errorf("expected error but got none")
 		}
 	})
 

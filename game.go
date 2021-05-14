@@ -30,31 +30,52 @@ func Start() {
 			fmt.Printf("   %s won 2 cards\n", winner.Name)
 			turn.AwardSpoils(winner)
 		case "war":
-			c1 = player1.Deck.Cards[2].String()
-			c2 = player2.Deck.Cards[2].String()
-			turn.PileCards()
-			fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
-			fmt.Printf("   %s won 6 cards\n", winner.Name)
-			turn.AwardSpoils(winner)
+			if len(player2.Deck.Cards) > 2 && len(player1.Deck.Cards) > 2 {
+				c1 = player1.Deck.Cards[2].String()
+				c2 = player2.Deck.Cards[2].String()
+				turn.PileCards()
+				fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
+				fmt.Printf("   %s won 6 cards\n", winner.Name)
+				turn.PileCards()
+				turn.AwardSpoils(winner)
+			} else if len(player2.Deck.Cards) < 3 {
+				fmt.Printf("   WAR - %s doesn't have enough cards\n", p2)
+				turn.PileCards()
+			} else if len(player1.Deck.Cards) < 3 {
+				fmt.Printf("   WAR - %s doesn't have enough cards\n", p1)
+				turn.PileCards()
+			}
 		case "mutually assured destruction":
-			c1 = player1.Deck.Cards[2].String()
-			c2 = player2.Deck.Cards[2].String()
-			turn.PileCards()
-			fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
-			fmt.Println("   *mutually assured destruction* 6 cards removed from play")
+			if len(player2.Deck.Cards) > 2 && len(player1.Deck.Cards) > 2 {
+				c1 = player1.Deck.Cards[2].String()
+				c2 = player2.Deck.Cards[2].String()
+				turn.PileCards()
+				fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
+				fmt.Println("   *mutually assured destruction* 6 cards removed from play")
+				turn.PileCards()
+			} else if len(player2.Deck.Cards) < 3 {
+				fmt.Printf("   WAR - %s doesn't have enough cards\n", p2)
+				turn.PileCards()
+			} else if len(player1.Deck.Cards) < 3 {
+				fmt.Printf("   WAR - %s doesn't have enough cards\n", p1)
+				turn.PileCards()
+			}
 		}
 
 		if player1.HasLost() {
-			fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", player2.Name)
+			fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", p2)
 			break
 		}
 		if player2.HasLost() {
-			fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", player1.Name)
+			fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", p1)
 			break
 		}
 		l1 := len(player1.Deck.Cards)
 		l2 := len(player2.Deck.Cards)
 		fmt.Printf("   %s has %d cards and %s has %d cards\n", p1, l1, p2, l2)
+		if i == 9_999 {
+			fmt.Printf("maxiumum turns exceeded\nGame Over!")
+		}
 	}
 }
 

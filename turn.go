@@ -6,11 +6,15 @@ type Turn struct {
 }
 
 func (t Turn) Type() string {
-	if t.Player1.Deck.RankofCardAt(0) != t.Player2.Deck.RankofCardAt(0) {
+	r1, _ := t.Player1.Deck.RankofCardAt(0)
+	r2, _ := t.Player2.Deck.RankofCardAt(0)
+	if r1 != r2 {
 		return "basic"
 	}
 
-	if t.Player1.Deck.RankofCardAt(2) != t.Player2.Deck.RankofCardAt(2) {
+	r1, err1 := t.Player1.Deck.RankofCardAt(2)
+	r2, err2 := t.Player2.Deck.RankofCardAt(2)
+	if err1 != nil || err2 != nil || r1 != r2 {
 		return "war"
 	}
 
@@ -28,7 +32,9 @@ func (t Turn) Winner() Player {
 		return Player{Name: "No Winner"}
 	}
 
-	if t.Player1.Deck.RankofCardAt(index) > t.Player2.Deck.RankofCardAt(index) {
+	r1, _ := t.Player1.Deck.RankofCardAt(index)
+	r2, err2 := t.Player2.Deck.RankofCardAt(index)
+	if err2 != nil || r1 > r2 {
 		return t.Player1
 	} else {
 		return t.Player2
@@ -36,22 +42,28 @@ func (t Turn) Winner() Player {
 }
 
 func (t *Turn) PileCards() {
-	var numCards int
+	var numCards int = 0
 	switch t.Type() {
 	case "basic":
 		numCards = 1
 	case "war":
 		numCards = 3
 	case "mutually assured destruction":
-		for i := 0; i < 3; i++ {
-			t.Player1.Deck.RemoveCard()
-			t.Player2.Deck.RemoveCard()
+		for _, deck := range []*Deck{t.Player1.Deck, t.Player2.Deck} {
+			for i := 0; i < 3; i++ {
+				if len(deck.Cards) > 0 {
+					deck.RemoveCard()
+				}
+			}
 		}
 	}
 
 	for i := 0; i < numCards; i++ {
-		t.SpoilsOfWar = append(t.SpoilsOfWar, t.Player1.Deck.RemoveCard())
-		t.SpoilsOfWar = append(t.SpoilsOfWar, t.Player2.Deck.RemoveCard())
+		for _, deck := range []*Deck{t.Player1.Deck, t.Player2.Deck} {
+			if len(deck.Cards) > 0 {
+				t.SpoilsOfWar = append(t.SpoilsOfWar, deck.RemoveCard())
+			}
+		}
 	}
 }
 

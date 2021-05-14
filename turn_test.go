@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -151,6 +150,25 @@ func TestTurn(t *testing.T) {
 		winner := turn.Winner()
 		if winner != player1 {
 			t.Errorf("got %v want %v for winner", winner, player1)
+		}
+		turn.PileCards()
+	})
+
+	t.Run("why is this crashing", func(t *testing.T) {
+		card1 := Card{"club", "Ace", 14}
+		card2 := Card{"diamond", "Queen", 12}
+		card3 := Card{"heart", "Ace", 14}
+		card4 := Card{"heart", "2", 2}
+		card5 := Card{"heart", "3", 3}
+		card6 := Card{"heart", "4", 4}
+
+		cacco := Player{"Cacco", &Deck{[]Card{card1, card2}}}
+		pickles := Player{"Pickles", &Deck{[]Card{card3, card4, card5, card6}}}
+
+		turn := &Turn{cacco, pickles, []Card{}}
+		winner := turn.Winner()
+		if winner != pickles {
+			t.Errorf("got %v want %v for winner", winner, pickles)
 		}
 	})
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math"
 )
@@ -19,8 +20,11 @@ type Deck struct {
 	Cards []Card
 }
 
-func (d Deck) RankofCardAt(index int) int {
-	return d.Cards[index].Rank
+func (d Deck) RankofCardAt(index int) (int, error) {
+	if len(d.Cards) <= index {
+		return 0, errors.New("not enough cards")
+	}
+	return d.Cards[index].Rank, nil
 }
 
 func (d Deck) HighRankingCards() []Card {
