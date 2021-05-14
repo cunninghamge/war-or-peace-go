@@ -19,7 +19,7 @@ func Start(filename string) {
 	fmt.Println("Type 'GO' to start the game!")
 	fmt.Println("-----------------------------------------------------------------")
 
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= 10_000; i++ {
 		PlayTurn(player1, player2, i)
 
 		gameOver := GameOver(player1, player2, i)
