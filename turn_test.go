@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -138,6 +139,18 @@ func TestTurn(t *testing.T) {
 		want = []Card{card7}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got %v want %v for player 2 cards", got, want)
+		}
+	})
+
+	t.Run("war if player has less than 3 cards", func(t *testing.T) {
+		player1.Deck.Cards = []Card{card2, card1, card5, card8}
+		player2.Deck.Cards = []Card{card4, card3}
+
+		turn := &Turn{player1, player2, []Card{}}
+
+		winner := turn.Winner()
+		if winner != player1 {
+			t.Errorf("got %v want %v for winner", winner, player1)
 		}
 	})
 }
