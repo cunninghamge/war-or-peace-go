@@ -6,6 +6,8 @@ import (
 	"math"
 )
 
+var ErrOutOfRange = errors.New("not enough cards")
+
 type Card struct {
 	Suit  string
 	Value string
@@ -22,7 +24,7 @@ type Deck struct {
 
 func (d Deck) RankofCardAt(index int) (int, error) {
 	if len(d.Cards) <= index {
-		return 0, errors.New("not enough cards")
+		return 0, ErrOutOfRange
 	}
 	return d.Cards[index].Rank, nil
 }
@@ -30,7 +32,7 @@ func (d Deck) RankofCardAt(index int) (int, error) {
 func (d Deck) HighRankingCards() []Card {
 	var cards []Card
 	for _, card := range d.Cards {
-		if card.Rank >= 11 {
+		if card.Rank > 10 {
 			cards = append(cards, card)
 		}
 	}
@@ -38,9 +40,10 @@ func (d Deck) HighRankingCards() []Card {
 }
 
 func (d Deck) PercentHighRanking() float64 {
-	numHighRanking := float64(len(d.HighRankingCards()))
-	numCards := float64(len(d.Cards))
-	return math.Round((numHighRanking/numCards*100.00)/0.01) * 0.01
+	numHighRanking := len(d.HighRankingCards())
+	numCards := len(d.Cards)
+	pct := float64(numHighRanking) / float64(numCards)
+	return math.Round(pct*1000) / 10
 }
 
 func (d *Deck) RemoveCard() Card {

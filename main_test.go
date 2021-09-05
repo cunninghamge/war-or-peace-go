@@ -1,8 +1,25 @@
 package main
 
 import (
+	"os"
 	"testing"
 )
+
+var (
+	testDeck  Deck
+	testCards []Card
+)
+
+func TestMain(m *testing.M) {
+	card1 := Card{"diamond", "Queen", 12}
+	card2 := Card{"spade", "3", 3}
+	card3 := Card{"heart", "Ace", 14}
+	testCards = []Card{card1, card2, card3}
+	testDeck = Deck{testCards}
+
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestNewDeck(t *testing.T) {
 	newDeck := NewDeck()

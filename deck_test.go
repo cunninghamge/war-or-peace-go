@@ -5,146 +5,104 @@ import (
 	"testing"
 )
 
-func TestCard(t *testing.T) {
-	card := Card{
-		"heart",
-		"Jack",
-		11,
-	}
-
-	if card.Suit != "heart" {
-		t.Errorf("got %s want %s for card suit", card.Suit, "heart")
-	}
-
-	if card.Value != "Jack" {
-		t.Errorf("got %s want %s for card value", card.Value, "Jack")
-	}
-
-	if card.Rank != 11 {
-		t.Errorf("got %d want %d for card rank", card.Rank, 11)
-	}
-}
-
 func TestString(t *testing.T) {
-	card1 := Card{"diamond", "Queen", 12}
-	card2 := Card{"spade", "3", 3}
-	card3 := Card{"heart", "Ace", 14}
-
-	got := card1.String()
-	want := "the Queen of diamonds"
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	testCases := map[string]Card{
+		"the Queen of diamonds": testCards[0],
+		"the 3 of spades":       testCards[1],
+		"the Ace of hearts":     testCards[2],
 	}
 
-	got = card2.String()
-	want = "the 3 of spades"
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
-	}
-
-	got = card3.String()
-	want = "the Ace of hearts"
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	for str, card := range testCases {
+		t.Run(str, func(t *testing.T) {
+			got := card.String()
+			if got != str {
+				t.Errorf("got %q str %q", got, str)
+			}
+		})
 	}
 }
 
-func TestDeck(t *testing.T) {
-	card1 := Card{"diamond", "Queen", 12}
-	card2 := Card{"spade", "3", 3}
-	card3 := Card{"heart", "Ace", 14}
-	deck := &Deck{
-		[]Card{card1, card2, card3},
+func TestRankOfCardAt(t *testing.T) {
+	t.Run("cards in deck", func(t *testing.T) {
+		for i, card := range testCards {
+			rank, err := testDeck.RankofCardAt(i)
+			if rank != card.Rank {
+				t.Errorf("got %d want %d", rank, card.Rank)
+			}
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		}
+	})
+
+	t.Run("index out of range", func(t *testing.T) {
+		rank, err := testDeck.RankofCardAt(3)
+		if rank != 0 {
+			t.Errorf("got %d want %d", rank, 0)
+		}
+		if err == nil {
+			t.Errorf("expected an error but didn't get one")
+		}
+	})
+}
+
+func TestHighRankingCards(t *testing.T) {
+	got := testDeck.HighRankingCards()
+	want := []Card{testCards[0], testCards[2]}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+
+func TestPercentHighRanking(t *testing.T) {
+	got := testDeck.PercentHighRanking()
+	want := 66.7
+	if got != want {
+		t.Errorf("got %f want %f", got, want)
+	}
+}
+
+func TestRemoveCard(t *testing.T) {
+	deck := Deck{testCards}
+	removed := deck.RemoveCard()
+	if removed != testCards[0] {
+		t.Errorf("got %v want %v for remove card", removed, testCards[0])
 	}
 
-	t.Run("deck.Cards", func(t *testing.T) {
-		want := []Card{card1, card2, card3}
-		if !reflect.DeepEqual(deck.Cards, want) {
-			t.Errorf("got %v want %v for deck cards", deck.Cards, want)
-		}
-	})
+	want := []Card{testCards[1], testCards[2]}
+	if !reflect.DeepEqual(deck.Cards, want) {
+		t.Errorf("%v should have been removed from deck but was not", testCards[0])
+	}
 
-	t.Run("deck.RankofCardAt", func(t *testing.T) {
-		rank, err := deck.RankofCardAt(0)
-		if rank != card1.Rank {
-			t.Errorf("got %v want %v for rank of card at 0", rank, card1.Rank)
-		}
-		if err != nil {
-			t.Errorf("did not expect an error but got one")
-		}
+	got := deck.HighRankingCards()
+	if !reflect.DeepEqual(got, []Card{testCards[2]}) {
+		t.Errorf("got %v want %v for new high ranking cards", got, []Card{testCards[2]})
+	}
 
-		rank, err = deck.RankofCardAt(2)
-		if rank != card3.Rank {
-			t.Errorf("got %v want %v for rank of card at 2", rank, card3.Rank)
-		}
-		if err != nil {
-			t.Errorf("did not expect an error but got one")
-		}
-	})
+	newPct := deck.PercentHighRanking()
+	if newPct != 50.00 {
+		t.Errorf("newPct %f want %f for new percent high ranking", newPct, 50.00)
+	}
+}
 
-	t.Run("RankofCardAt returns error if not enough cards", func(t *testing.T) {
-		_, err := deck.RankofCardAt(5)
-		if err == nil {
-			t.Errorf("expected error but got none")
-		}
-	})
+func TestAddCard(t *testing.T) {
+	deck := Deck{[]Card{testCards[1], testCards[2]}}
+	card4 := Card{"club", "5", 5}
 
-	t.Run("deck.HighRankingCards", func(t *testing.T) {
-		got := deck.HighRankingCards()
-		want := []Card{card1, card3}
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %v want %v for high ranking cards", got, want)
-		}
-	})
+	deck.AddCard(card4)
 
-	t.Run("deck.PercentHighRanking", func(t *testing.T) {
-		got := deck.PercentHighRanking()
-		want := 66.67
-		if got != want {
-			t.Errorf("got %f want %f for percent high ranking", got, want)
-		}
-	})
+	want := []Card{testCards[1], testCards[2], card4}
+	if !reflect.DeepEqual(deck.Cards, want) {
+		t.Errorf("got %v want %v for deck after adding new card", deck.Cards, want)
+	}
 
-	t.Run("deck.RemoveCard", func(t *testing.T) {
-		removed := deck.RemoveCard()
-		if removed != card1 {
-			t.Errorf("got %v want %v for remove card", removed, card1)
-		}
+	got := deck.HighRankingCards()
+	if !reflect.DeepEqual(got, []Card{testCards[2]}) {
+		t.Errorf("got %v want %v for new high ranking cards", got, []Card{testCards[3]})
+	}
 
-		want := []Card{card2, card3}
-		if !reflect.DeepEqual(deck.Cards, want) {
-			t.Errorf("%v should have been removed from deck but was not", card1)
-		}
-
-		got := deck.HighRankingCards()
-		if !reflect.DeepEqual(got, []Card{card3}) {
-			t.Errorf("got %v want %v for new high ranking cards", got, []Card{card3})
-		}
-
-		newPct := deck.PercentHighRanking()
-		if newPct != 50.00 {
-			t.Errorf("newPct %f want %f for new percent high ranking", newPct, 50.00)
-		}
-	})
-
-	t.Run("deck.AddCard", func(t *testing.T) {
-		card4 := Card{"club", "5", 5}
-
-		deck.AddCard(card4)
-
-		want := []Card{card2, card3, card4}
-		if !reflect.DeepEqual(deck.Cards, want) {
-			t.Errorf("got %v want %v for deck after adding new card", deck.Cards, want)
-		}
-
-		got := deck.HighRankingCards()
-		if !reflect.DeepEqual(got, []Card{card3}) {
-			t.Errorf("got %v want %v for new high ranking cards", got, []Card{card3})
-		}
-
-		newPct := deck.PercentHighRanking()
-		if newPct != 33.33 {
-			t.Errorf("newPct %f want %f for new percent high ranking", newPct, 33.33)
-		}
-	})
+	newPct := deck.PercentHighRanking()
+	if newPct != 33.3 {
+		t.Errorf("newPct %f want %f for new percent high ranking", newPct, 33.3)
+	}
 }
