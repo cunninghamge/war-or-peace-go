@@ -5,60 +5,50 @@ type Turn struct {
 	SpoilsOfWar      []Card
 }
 
-func (t Turn) Type() string {
-	r1, _ := t.Player1.Deck.RankofCardAt(0)
-	r2, _ := t.Player2.Deck.RankofCardAt(0)
-	if r1 != r2 {
-		return "basic"
+type TurnType int
+
+const (
+	basic TurnType = iota
+	war
+	mutuallyAssuredDestruction
+)
+
+func (t Turn) Type() TurnType {
+	if t.Player1.Deck.RankofCardAt(0) != t.Player2.Deck.RankofCardAt(0) {
+		return basic
 	}
 
-	r1, err1 := t.Player1.Deck.RankofCardAt(2)
-	r2, err2 := t.Player2.Deck.RankofCardAt(2)
-	if err1 != nil || err2 != nil || r1 != r2 {
-		return "war"
+	if t.Player1.Deck.RankofCardAt(2) != t.Player2.Deck.RankofCardAt(2) {
+		return war
 	}
 
-	return "mutually assured destruction"
+	return mutuallyAssuredDestruction
 }
 
-func (t Turn) Winner() Player {
+func (t Turn) Winner() *Player {
 	var index int
 	switch t.Type() {
-	case "basic":
+	case basic:
 		index = 0
-	case "war":
+	case war:
 		index = 2
-	case "mutually assured destruction":
-		return Player{Name: "No Winner"}
+	case mutuallyAssuredDestruction:
+		return nil
 	}
 
-	r1, _ := t.Player1.Deck.RankofCardAt(index)
-	r2, err2 := t.Player2.Deck.RankofCardAt(index)
-	if err2 != nil || r1 > r2 {
-		return t.Player1
+	if t.Player1.Deck.RankofCardAt(index) > t.Player2.Deck.RankofCardAt(index) {
+		return &t.Player1
 	} else {
-		return t.Player2
+		return &t.Player2
 	}
 }
 
 func (t *Turn) PileCards() {
-	var numCards int = 0
-	switch t.Type() {
-	case "basic":
-		numCards = 1
-	case "war":
-		numCards = 3
-	case "mutually assured destruction":
-		for _, deck := range []*Deck{t.Player1.Deck, t.Player2.Deck} {
-			for i := 0; i < 3; i++ {
-				if len(deck.Cards) > 0 {
-					deck.RemoveCard()
-				}
-			}
+	turnType := t.Type()
+	for i := 0; i < 3; i++ {
+		if turnType == basic && i > 0 {
+			return
 		}
-	}
-
-	for i := 0; i < numCards; i++ {
 		for _, deck := range []*Deck{t.Player1.Deck, t.Player2.Deck} {
 			if len(deck.Cards) > 0 {
 				t.SpoilsOfWar = append(t.SpoilsOfWar, deck.RemoveCard())
@@ -67,8 +57,10 @@ func (t *Turn) PileCards() {
 	}
 }
 
-func (t Turn) AwardSpoils(winner Player) {
-	for _, card := range t.SpoilsOfWar {
-		winner.Deck.AddCard(card)
+func (t *Turn) AwardSpoils(winner *Player) {
+	if winner != nil {
+		for _, card := range t.SpoilsOfWar {
+			winner.Deck.AddCard(card)
+		}
 	}
 }
