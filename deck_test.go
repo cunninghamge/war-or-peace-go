@@ -5,43 +5,20 @@ import (
 	"testing"
 )
 
-func TestString(t *testing.T) {
-	testCases := map[string]Card{
-		"the Queen of diamonds": testCards[0],
-		"the 3 of spades":       testCards[1],
-		"the Ace of hearts":     testCards[2],
-	}
-
-	for str, card := range testCases {
-		t.Run(str, func(t *testing.T) {
-			got := card.String()
-			if got != str {
-				t.Errorf("got %q str %q", got, str)
-			}
-		})
-	}
-}
-
 func TestRankOfCardAt(t *testing.T) {
-	t.Run("cards in deck", func(t *testing.T) {
+	t.Run("with cards", func(t *testing.T) {
 		for i, card := range testCards {
-			rank, err := testDeck.RankofCardAt(i)
+			rank := testDeck.RankofCardAt(i)
 			if rank != card.Rank {
 				t.Errorf("got %d want %d", rank, card.Rank)
-			}
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
 			}
 		}
 	})
 
-	t.Run("index out of range", func(t *testing.T) {
-		rank, err := testDeck.RankofCardAt(3)
+	t.Run("with insufficient cards", func(t *testing.T) {
+		rank := testDeck.RankofCardAt(3)
 		if rank != 0 {
 			t.Errorf("got %d want %d", rank, 0)
-		}
-		if err == nil {
-			t.Errorf("expected an error but didn't get one")
 		}
 	})
 }
@@ -56,7 +33,7 @@ func TestHighRankingCards(t *testing.T) {
 
 func TestPercentHighRanking(t *testing.T) {
 	got := testDeck.PercentHighRanking()
-	want := 66.7
+	want := 66.67
 	if got != want {
 		t.Errorf("got %f want %f", got, want)
 	}
@@ -102,7 +79,7 @@ func TestAddCard(t *testing.T) {
 	}
 
 	newPct := deck.PercentHighRanking()
-	if newPct != 33.3 {
+	if newPct != 33.33 {
 		t.Errorf("newPct %f want %f for new percent high ranking", newPct, 33.3)
 	}
 }
