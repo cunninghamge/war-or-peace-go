@@ -43,19 +43,20 @@ func (d *Deck) AddCard(card Card) {
 	d.Cards = append(d.Cards, card)
 }
 
-func (d *Deck) NewFromCSV(filepath string) {
+func (d *Deck) NewFromCSV(filepath string) error {
 	var source = "fixtures/cards.csv"
 	if len(filepath) > 0 {
 		source = filepath
 	}
-
 	records, err := reader.ReadFile(source)
 	if err != nil {
-		exitWithError(err)
+		return err
 	}
 
 	d.Cards, err = createCards(records)
 	if err != nil {
-		exitWithError(err)
+		return err
 	}
+
+	return nil
 }

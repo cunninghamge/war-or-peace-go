@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
@@ -85,23 +86,53 @@ func TestAddCard(t *testing.T) {
 }
 
 func TestNewFromCSV(t *testing.T) {
-	testCases := []struct {
+	os.WriteFile("reader_err.csv", []byte("a,b,c\nd,e"), 0644)
+	defer os.Remove("reader_err.csv")
+	os.WriteFile("card_err.csv", []byte("a,b\nd,e"), 0644)
+	defer os.Remove("card_err.csv")
+
+	testCases := map[string]struct {
 		length   int
 		filepath string
+		wantErr  bool
 	}{
-		{filepath: "fixtures/two_cards.csv", length: 2},
-		{filepath: "fixtures/cards.csv", length: 52},
-		{filepath: "", length: 52},
+		"with a file": {
+			filepath: "fixtures/two_cards.csv",
+			length:   2,
+		},
+		"using default file": {
+			filepath: "",
+			length:   52,
+		},
+		"with file reading error": {
+			filepath: "reader_err.csv",
+			wantErr:  true,
+		},
+		"card creation error": {
+			filepath: "card_err.csv",
+			wantErr:  true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.filepath, func(t *testing.T) {
 			var deck = &Deck{}
-			deck.NewFromCSV(tc.filepath)
-			got := len(deck.Cards)
-			want := tc.length
-			if got != want {
-				t.Errorf("got %d want %d", got, want)
+			err := deck.NewFromCSV(tc.filepath)
+
+			switch tc.wantErr {
+			case true:
+				if err == nil {
+					t.Errorf("expected an error but didn't get one")
+				}
+			default:
+				got := len(deck.Cards)
+				want := tc.length
+				if got != want {
+					t.Errorf("got %d want %d", got, want)
+				}
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
 			}
 		})
 	}
