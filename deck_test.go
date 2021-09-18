@@ -83,3 +83,26 @@ func TestAddCard(t *testing.T) {
 		t.Errorf("newPct %f want %f for new percent high ranking", newPct, 33.3)
 	}
 }
+
+func TestNewFromCSV(t *testing.T) {
+	testCases := []struct {
+		length   int
+		filepath string
+	}{
+		{filepath: "fixtures/two_cards.csv", length: 2},
+		{filepath: "fixtures/cards.csv", length: 52},
+		{filepath: "", length: 52},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.filepath, func(t *testing.T) {
+			var deck = &Deck{}
+			deck.NewFromCSV(tc.filepath)
+			got := len(deck.Cards)
+			want := tc.length
+			if got != want {
+				t.Errorf("got %d want %d", got, want)
+			}
+		})
+	}
+}
