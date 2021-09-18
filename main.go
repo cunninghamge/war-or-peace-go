@@ -18,5 +18,5 @@ func exitWithError(err error) {
 }
 
 func main() {
-	newGame(arg(os.Args), os.Stdin, os.Stdout).play()
+	newGame(arg(os.Args), os.Stdin, os.Stdout).start()
 }
