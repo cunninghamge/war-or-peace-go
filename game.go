@@ -1,17 +1,11 @@
 package main
 
 import (
-	// 	"encoding/csv"
-	// 	"fmt"
 	"bufio"
 	"fmt"
 	"io"
 	"os"
 	"strings"
-	// 	"math/rand"
-	// 	"os"
-	// 	"strconv"
-	// 	"time"
 )
 
 var (
@@ -39,7 +33,7 @@ func newGame(filepath string, r io.Reader, w io.Writer) Game {
 	}
 }
 
-func (g Game) start() {
+func (g Game) play() {
 	fmt.Fprintf(g.writer, "%sThis game will be played with %d cards.\n", welcome, len(g.deck.Cards))
 
 	g.getPlayers()
@@ -55,7 +49,8 @@ func (g Game) start() {
 		}
 	}
 
-	g.play()
+	g.playTurns()
+	g.declareWinner()
 }
 
 func (g Game) getPlayers() {
@@ -76,7 +71,6 @@ func (g Game) deal() {
 	for i := 0; i < len(g.deck.Cards); i++ {
 		switch i%2 == 0 {
 		case true:
-			fmt.Printf("g.player1.Deck.Cards: %v\n", g.player1)
 			g.player1.Deck.AddCards([]Card{g.deck.Cards[i]})
 		case false:
 			g.player2.Deck.AddCards([]Card{g.deck.Cards[i]})
@@ -84,35 +78,27 @@ func (g Game) deal() {
 	}
 }
 
-func (g Game) play() {
+func (g Game) playTurns() {
 	for i := 1; !g.player1.HasLost() && !g.player2.HasLost(); i++ {
 		turn := Turn{Player1: g.player1, Player2: g.player2}
 		winner := turn.Winner()
 
-		turnType := turn.Type()
-		fmt.Fprintf(g.writer, "Turn %d: %s played %s and %s played %s\n", i,
-			g.player1.Name, g.player1.Deck.Cards[0],
-			g.player2.Name, g.player2.Deck.Cards[0],
-		)
-		switch turnType {
+		g.cardsPlayed(i)
+		switch turn.Type() {
 		case basic:
 			fmt.Fprintf(g.writer, "		%s won 2 cards\n", winner.Name)
 		case war:
-			fmt.Fprintf(g.writer, "		WAR - %s played %s and %s played %s\n",
-				g.player1.Name, g.player1.Deck.Cards[2],
-				g.player2.Name, g.player2.Deck.Cards[2],
-			)
-			fmt.Fprintf(g.writer, "		%s won 6 cards\n", winner.Name)
+			fmt.Fprintf(g.writer, "		%s won 8 cards\n", winner.Name)
 		case mutuallyAssuredDestruction:
-			fmt.Fprintf(g.writer, "		WAR - %s played %s and %s played %s\n",
-				g.player1.Name, g.player1.Deck.Cards[2],
-				g.player2.Name, g.player2.Deck.Cards[2],
-			)
-			fmt.Fprint(g.writer, "		*mutually assured destruction* 6 cards removed from play\n")
+			fmt.Fprint(g.writer, "		*mutually assured destruction* 8 cards removed from play\n")
 		}
+
 		turn.PileCards()
 		turn.AwardSpoils(winner)
 	}
+}
+
+func (g Game) declareWinner() {
 	var winner, loser *Player
 	switch g.player1.HasLost() {
 	case true:
@@ -122,4 +108,23 @@ func (g Game) play() {
 	}
 	fmt.Fprintf(g.writer, "%s is out of cards!\n", loser.Name)
 	fmt.Fprintf(g.writer, "*~*~*~* %s won the game! *~*~*~*\n", winner.Name)
+}
+
+func (g Game) cardsPlayed(turnNumber int) {
+	for _, i := range []int{0, 3, 2, 1} {
+		prefix := "		WAR -"
+		if i == 0 {
+			prefix = fmt.Sprintf("Turn %d:", turnNumber)
+		}
+		player1Card := g.player1.Deck.Cards[i]
+		player2Card := g.player2.Deck.Cards[i]
+		fmt.Fprintf(g.writer, "%s %s played %s and %s played %s\n",
+			prefix,
+			g.player1.Name, player1Card,
+			g.player2.Name, player2Card,
+		)
+		if player1Card.Rank != player2Card.Rank {
+			break
+		}
+	}
 }

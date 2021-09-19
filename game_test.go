@@ -22,17 +22,17 @@ func TestNewGame(t *testing.T) {
 
 func TestStart(t *testing.T) {
 	reader := &bytes.Buffer{}
-	reader.Write([]byte("Cacco\nPickles\ngo\n"))
+	reader.Write([]byte("Player2\nPlayer1\ngo\n"))
 	writer := &bytes.Buffer{}
 	cardSource := "./fixtures/two_cards.csv"
 	game := newGame(cardSource, reader, writer)
 
-	game.start()
+	game.play()
 
 	got := writer.String()
 	want := `Welcome to War!
 This game will be played with 2 cards.
-Enter player 1: Enter player 2: The players today are Cacco and Pickles.
+Enter player 1: Enter player 2: The players today are Player2 and Player1.
 Type 'GO' to start the game!
 ----------------------------------------
 `
@@ -43,7 +43,7 @@ Type 'GO' to start the game!
 
 func TestGetPlayers(t *testing.T) {
 	reader := &bytes.Buffer{}
-	reader.Write([]byte("Cacco\nPickles\n"))
+	reader.Write([]byte("Player2\nPlayer1\n"))
 	writer := &bytes.Buffer{}
 	cardSource := "./fixtures/two_cards.csv"
 	game := newGame(cardSource, reader, writer)
@@ -51,7 +51,7 @@ func TestGetPlayers(t *testing.T) {
 	game.getPlayers()
 
 	got := writer.String()
-	want := `Enter player 1: Enter player 2: The players today are Cacco and Pickles.
+	want := `Enter player 1: Enter player 2: The players today are Player2 and Player1.
 `
 	if got != want {
 		t.Errorf("got\n%s\n  want\n%s\n", got, want)
@@ -66,32 +66,153 @@ func TestPlay(t *testing.T) {
 		scanner: bufio.NewScanner(&bytes.Buffer{}),
 		writer:  writer,
 		player1: &Player{
-			Name: "Pickles",
-			Deck: &Deck{deck.Cards[:7]},
+			Name: "Player1",
+			Deck: &Deck{deck.Cards[:9]},
 		},
 		player2: &Player{
-			Name: "Cacco",
-			Deck: &Deck{deck.Cards[7:]},
+			Name: "Player2",
+			Deck: &Deck{deck.Cards[9:]},
 		},
 	}
 
-	game.play()
+	game.playTurns()
 
 	got := writer.String()
-	want := `Turn 1: Pickles played the 2 of spades and Cacco played the 3 of clubs
-		Cacco won 2 cards
-Turn 2: Pickles played the Ace of hearts and Cacco played the Ace of spades
-		WAR - Pickles played the 5 of diamonds and Cacco played the 4 of clubs
-		Pickles won 6 cards
-Turn 3: Pickles played the 5 of spades and Cacco played the 5 of hearts
-		WAR - Pickles played the 7 of clubs and Cacco played the 7 of hearts
-		*mutually assured destruction* 6 cards removed from play
-Turn 4: Pickles played the Ace of hearts and Cacco played the 2 of spades
-		Pickles won 2 cards
-Turn 5: Pickles played the Ace of spades and Cacco played the 3 of clubs
-		Pickles won 2 cards
-Cacco is out of cards!
-*~*~*~* Pickles won the game! *~*~*~*
+	want := `Turn 1: Player1 played the 2 of spades and Player2 played the 3 of clubs
+		Player2 won 2 cards
+Turn 2: Player1 played the 9 of clubs and Player2 played the 9 of spades
+		WAR - Player1 played the 5 of diamonds and Player2 played the 4 of clubs
+		Player1 won 8 cards
+Turn 3: Player1 played the 10 of diamonds and Player2 played the 10 of hearts
+		WAR - Player1 played the 7 of clubs and Player2 played the 7 of hearts
+		WAR - Player1 played the 6 of hearts and Player2 played the 6 of spades
+		WAR - Player1 played the 5 of spades and Player2 played the 5 of hearts
+		*mutually assured destruction* 8 cards removed from play
+Turn 4: Player1 played the 9 of clubs and Player2 played the 2 of spades
+		Player1 won 2 cards
+Turn 5: Player1 played the 9 of spades and Player2 played the 3 of clubs
+		Player1 won 2 cards
+`
+	if got != want {
+		t.Errorf("got\n%s\nwant\n%s", got, want)
+	}
+}
+
+func TestCardsPlayed(t *testing.T) {
+	testCases := map[string]struct {
+		player1Cards []Card
+		player2Cards []Card
+		want         string
+	}{
+		"basic turn": {
+			player1Cards: []Card{
+				{"Queen", "diamond", 12},
+			},
+			player2Cards: []Card{
+				{"10", "heart", 10},
+			},
+			want: "Turn 1: Player1 played the Queen of diamonds and Player2 played the 10 of hearts\n",
+		},
+		"war: first card wins": {
+			player1Cards: []Card{
+				{"Queen", "diamond", 12},
+				{"2", "club", 2},
+				{"7", "spade", 7},
+				{"4", "heart", 4},
+			},
+			player2Cards: []Card{
+				{"Queen", "heart", 12},
+				{"10", "diamond", 10},
+				{"5", "spade", 5},
+				{"3", "club", 3},
+			},
+			want: "Turn 1: Player1 played the Queen of diamonds and Player2 played the Queen of hearts\n" +
+				"		WAR - Player1 played the 4 of hearts and Player2 played the 3 of clubs\n",
+		},
+		"war: second card wins": {
+			player1Cards: []Card{
+				{"Queen", "diamond", 12},
+				{"2", "club", 2},
+				{"7", "spade", 7},
+				{"3", "heart", 3},
+			},
+			player2Cards: []Card{
+				{"Queen", "heart", 12},
+				{"10", "diamond", 10},
+				{"5", "spade", 5},
+				{"3", "club", 3},
+			},
+			want: "Turn 1: Player1 played the Queen of diamonds and Player2 played the Queen of hearts\n" +
+				"		WAR - Player1 played the 3 of hearts and Player2 played the 3 of clubs\n" +
+				"		WAR - Player1 played the 7 of spades and Player2 played the 5 of spades\n",
+		},
+		"war: last card wins": {
+			player1Cards: []Card{
+				{"Queen", "diamond", 12},
+				{"10", "diamond", 10},
+				{"7", "spade", 7},
+				{"3", "heart", 3},
+			},
+			player2Cards: []Card{
+				{"Queen", "heart", 12},
+				{"2", "club", 2},
+				{"7", "club", 7},
+				{"3", "club", 3},
+			},
+			want: "Turn 1: Player1 played the Queen of diamonds and Player2 played the Queen of hearts\n" +
+				"		WAR - Player1 played the 3 of hearts and Player2 played the 3 of clubs\n" +
+				"		WAR - Player1 played the 7 of spades and Player2 played the 7 of clubs\n" +
+				"		WAR - Player1 played the 10 of diamonds and Player2 played the 2 of clubs\n",
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			writer := &bytes.Buffer{}
+			game := Game{
+				scanner: bufio.NewScanner(&bytes.Buffer{}),
+				writer:  writer,
+				player1: &Player{
+					Name: "Player1",
+					Deck: &Deck{tc.player1Cards},
+				},
+				player2: &Player{
+					Name: "Player2",
+					Deck: &Deck{tc.player2Cards},
+				},
+			}
+
+			game.cardsPlayed(1)
+
+			got := writer.String()
+			want := tc.want
+			if got != want {
+				t.Errorf("got\n%s\nwant\n%s", got, want)
+			}
+		})
+	}
+}
+
+func TestDeclareWinner(t *testing.T) {
+	writer := &bytes.Buffer{}
+	game := Game{
+		scanner: bufio.NewScanner(&bytes.Buffer{}),
+		writer:  writer,
+		player1: &Player{
+			Name: "Player1",
+			Deck: &Deck{testCards[:1]},
+		},
+		player2: &Player{
+			Name: "Player2",
+			Deck: &Deck{[]Card{}},
+		},
+	}
+
+	game.declareWinner()
+
+	got := writer.String()
+	want := `Player2 is out of cards!
+*~*~*~* Player1 won the game! *~*~*~*
 `
 	if got != want {
 		t.Errorf("got\n%s\nwant\n%s", got, want)
