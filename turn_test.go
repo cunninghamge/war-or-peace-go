@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	player1   = &Player{Deck: &Deck{}}
-	player2   = &Player{Deck: &Deck{}}
+	player1   = &Player{Name: "Player1", Deck: &Deck{}}
+	player2   = &Player{Name: "Player2", Deck: &Deck{}}
 	emptyDeck = Deck{[]Card{}}
 )
 
@@ -21,38 +21,42 @@ func TestTurn(t *testing.T) {
 		"basic": {
 			turnType: basic,
 			player1Cards: []Card{
-				{"heart", "Jack", 11},
+				{"Jack", "heart", 11},
 			},
 			player2Cards: []Card{
-				{"heart", "9", 9},
+				{"9", "heart", 9},
 			},
 			winner: player1,
 		},
 		"war": {
 			turnType: war,
 			player1Cards: []Card{
-				{"heart", "10", 10},
-				{"heart", "9", 9},
-				{"diamond", "2", 2},
+				{"Jack", "club", 11},
+				{"10", "heart", 10},
+				{"9", "heart", 9},
+				{"2", "diamond", 2},
 			},
 			player2Cards: []Card{
-				{"diamond", "10", 10},
-				{"diamond", "8", 8},
-				{"heart", "3", 3},
+				{"Jack", "heart", 11},
+				{"10", "diamond", 10},
+				{"8", "diamond", 8},
+				{"3", "heart", 3},
 			},
 			winner: player2,
 		},
 		"mutually assured destruction": {
 			turnType: mutuallyAssuredDestruction,
 			player1Cards: []Card{
-				{"heart", "10", 10},
-				{"heart", "9", 9},
-				{"diamond", "2", 2},
+				{"Jack", "heart", 11},
+				{"10", "heart", 10},
+				{"9", "heart", 9},
+				{"2", "diamond", 2},
 			},
 			player2Cards: []Card{
-				{"diamond", "10", 10},
-				{"diamond", "8", 8},
-				{"heart", "2", 2},
+				{"Jack", "heart", 11},
+				{"10", "diamond", 10},
+				{"9", "diamond", 9},
+				{"2", "heart", 2},
 			},
 			winner: nil,
 		},
@@ -87,7 +91,7 @@ func TestTurn(t *testing.T) {
 				want = *tc.winner
 			}
 			if !reflect.DeepEqual(got, want) {
-				t.Errorf("got %v want %v", got, want)
+				t.Errorf("got %v want %v", got.Name, want.Name)
 			}
 		})
 

@@ -3,7 +3,6 @@ package main
 type Turn struct {
 	Player1, Player2 *Player
 	SpoilsOfWar      []Card
-	winner           *Player
 }
 
 type TurnType int
@@ -19,35 +18,32 @@ func (t Turn) Type() TurnType {
 		return basic
 	}
 
-	if t.Player1.Deck.RankofCardAt(2) != t.Player2.Deck.RankofCardAt(2) {
-		return war
+	for i := 3; i > 0; i-- {
+		if t.Player1.Deck.RankofCardAt(i) != t.Player2.Deck.RankofCardAt(i) {
+			return war
+		}
 	}
 
 	return mutuallyAssuredDestruction
 }
 
 func (t Turn) Winner() *Player {
-	var index int
-	switch t.Type() {
-	case basic:
-		index = 0
-	case war:
-		index = 2
-	case mutuallyAssuredDestruction:
-		return nil
+	for _, i := range []int{0, 3, 2, 1} {
+		player1Card := t.Player1.Deck.RankofCardAt(i)
+		player2Card := t.Player2.Deck.RankofCardAt(i)
+		if player1Card > player2Card {
+			return t.Player1
+		}
+		if player2Card > player1Card {
+			return t.Player2
+		}
 	}
-
-	if t.Player1.Deck.RankofCardAt(index) > t.Player2.Deck.RankofCardAt(index) {
-		t.winner = t.Player1
-	} else {
-		t.winner = t.Player2
-	}
-	return t.winner
+	return nil
 }
 
 func (t *Turn) PileCards() {
 	turnType := t.Type()
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 4; i++ {
 		for _, deck := range []*Deck{t.Player1.Deck, t.Player2.Deck} {
 			if len(deck.Cards) > 0 {
 				t.SpoilsOfWar = append(t.SpoilsOfWar, deck.RemoveCard())
