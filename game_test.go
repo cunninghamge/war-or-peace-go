@@ -66,12 +66,12 @@ func TestPlay(t *testing.T) {
 		scanner: bufio.NewScanner(&bytes.Buffer{}),
 		writer:  writer,
 		player1: &Player{
-			Name: "Player1",
-			Deck: &Deck{deck.Cards[:9]},
+			name: "Player1",
+			deck: &Deck{deck.cards[:9]},
 		},
 		player2: &Player{
-			Name: "Player2",
-			Deck: &Deck{deck.Cards[9:]},
+			name: "Player2",
+			deck: &Deck{deck.cards[9:]},
 		},
 	}
 
@@ -173,12 +173,12 @@ func TestCardsPlayed(t *testing.T) {
 				scanner: bufio.NewScanner(&bytes.Buffer{}),
 				writer:  writer,
 				player1: &Player{
-					Name: "Player1",
-					Deck: &Deck{tc.player1Cards},
+					name: "Player1",
+					deck: &Deck{tc.player1Cards},
 				},
 				player2: &Player{
-					Name: "Player2",
-					Deck: &Deck{tc.player2Cards},
+					name: "Player2",
+					deck: &Deck{tc.player2Cards},
 				},
 			}
 
@@ -199,12 +199,12 @@ func TestDeclareWinner(t *testing.T) {
 		scanner: bufio.NewScanner(&bytes.Buffer{}),
 		writer:  writer,
 		player1: &Player{
-			Name: "Player1",
-			Deck: &Deck{testCards[:1]},
+			name: "Player1",
+			deck: &Deck{testCards[:1]},
 		},
 		player2: &Player{
-			Name: "Player2",
-			Deck: &Deck{[]Card{}},
+			name: "Player2",
+			deck: &Deck{[]Card{}},
 		},
 	}
 

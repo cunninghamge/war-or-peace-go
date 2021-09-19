@@ -9,20 +9,20 @@ import (
 
 // TODO change deck type from struct to []Card
 type Deck struct {
-	Cards []Card
+	cards []Card
 }
 
 func (d Deck) RankofCardAt(index int) int {
-	if len(d.Cards) <= index {
+	if len(d.cards) <= index {
 		return 0
 	}
-	return d.Cards[index].Rank
+	return d.cards[index].rank
 }
 
 func (d Deck) HighRankingCards() []Card {
 	var cards []Card
-	for _, card := range d.Cards {
-		if card.Rank > 10 {
+	for _, card := range d.cards {
+		if card.rank > 10 {
 			cards = append(cards, card)
 		}
 	}
@@ -31,28 +31,28 @@ func (d Deck) HighRankingCards() []Card {
 
 func (d Deck) PercentHighRanking() float64 {
 	numHighRanking := len(d.HighRankingCards())
-	numCards := len(d.Cards)
+	numCards := len(d.cards)
 	pct := float64(numHighRanking) / float64(numCards)
 	return math.Round(pct*10000) / 100
 }
 
 func (d *Deck) RemoveCard() Card {
-	card := d.Cards[0]
-	d.Cards = d.Cards[1:]
+	card := d.cards[0]
+	d.cards = d.cards[1:]
 	return card
 }
 
 func (d *Deck) AddCards(newCards []Card) {
-	tempCards := make([]Card, 0, len(d.Cards)+len(newCards))
-	tempCards = append(tempCards, d.Cards...)
+	tempCards := make([]Card, 0, len(d.cards)+len(newCards))
+	tempCards = append(tempCards, d.cards...)
 	tempCards = append(tempCards, newCards...)
-	d.Cards = tempCards
+	d.cards = tempCards
 }
 
 func (d Deck) Shuffle() Deck {
 	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(d.Cards), func(i, j int) {
-		d.Cards[i], d.Cards[j] = d.Cards[j], d.Cards[i]
+	rand.Shuffle(len(d.cards), func(i, j int) {
+		d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
 	})
 	return d
 }
@@ -67,7 +67,7 @@ func (d *Deck) NewFromCSV(filepath string) error {
 		return err
 	}
 
-	d.Cards, err = createCards(records)
+	d.cards, err = createCards(records)
 	if err != nil {
 		return err
 	}

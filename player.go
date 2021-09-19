@@ -1,10 +1,10 @@
 package main
 
 type Player struct {
-	Name string
-	Deck *Deck
+	name string
+	deck *Deck
 }
 
 func (p Player) HasLost() bool {
-	return len(p.Deck.Cards) == 0
+	return len(p.deck.cards) == 0
 }

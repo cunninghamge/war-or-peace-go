@@ -28,13 +28,13 @@ func newGame(filepath string, r io.Reader, w io.Writer) Game {
 		scanner: scanner,
 		writer:  w,
 		deck:    deck,
-		player1: &Player{Deck: &Deck{[]Card{}}},
-		player2: &Player{Deck: &Deck{[]Card{}}},
+		player1: &Player{deck: &Deck{[]Card{}}},
+		player2: &Player{deck: &Deck{[]Card{}}},
 	}
 }
 
 func (g Game) play() {
-	fmt.Fprintf(g.writer, "%sThis game will be played with %d cards.\n", welcome, len(g.deck.Cards))
+	fmt.Fprintf(g.writer, "%sThis game will be played with %d cards.\n", welcome, len(g.deck.cards))
 
 	g.getPlayers()
 	g.deal()
@@ -56,39 +56,39 @@ func (g Game) play() {
 func (g Game) getPlayers() {
 	fmt.Fprint(g.writer, "Enter player 1: ")
 	g.scanner.Scan()
-	g.player1.Name = g.scanner.Text()
+	g.player1.name = g.scanner.Text()
 
 	fmt.Fprint(g.writer, "Enter player 2: ")
 	g.scanner.Scan()
-	g.player2.Name = g.scanner.Text()
+	g.player2.name = g.scanner.Text()
 
 	fmt.Fprintf(g.writer, "The players today are %s and %s.\n",
-		g.player1.Name, g.player2.Name)
+		g.player1.name, g.player2.name)
 }
 
 func (g Game) deal() {
 	g.deck.Shuffle()
-	for i := 0; i < len(g.deck.Cards); i++ {
+	for i := 0; i < len(g.deck.cards); i++ {
 		switch i%2 == 0 {
 		case true:
-			g.player1.Deck.AddCards([]Card{g.deck.Cards[i]})
+			g.player1.deck.AddCards([]Card{g.deck.cards[i]})
 		case false:
-			g.player2.Deck.AddCards([]Card{g.deck.Cards[i]})
+			g.player2.deck.AddCards([]Card{g.deck.cards[i]})
 		}
 	}
 }
 
 func (g Game) playTurns() {
 	for i := 1; !g.player1.HasLost() && !g.player2.HasLost(); i++ {
-		turn := Turn{Player1: g.player1, Player2: g.player2}
+		turn := Turn{player1: g.player1, player2: g.player2}
 		winner := turn.Winner()
 
 		g.cardsPlayed(i)
 		switch turn.Type() {
 		case basic:
-			fmt.Fprintf(g.writer, "		%s won 2 cards\n", winner.Name)
+			fmt.Fprintf(g.writer, "		%s won 2 cards\n", winner.name)
 		case war:
-			fmt.Fprintf(g.writer, "		%s won 8 cards\n", winner.Name)
+			fmt.Fprintf(g.writer, "		%s won 8 cards\n", winner.name)
 		case mutuallyAssuredDestruction:
 			fmt.Fprint(g.writer, "		*mutually assured destruction* 8 cards removed from play\n")
 		}
@@ -106,8 +106,8 @@ func (g Game) declareWinner() {
 	default:
 		winner, loser = g.player1, g.player2
 	}
-	fmt.Fprintf(g.writer, "%s is out of cards!\n", loser.Name)
-	fmt.Fprintf(g.writer, "*~*~*~* %s won the game! *~*~*~*\n", winner.Name)
+	fmt.Fprintf(g.writer, "%s is out of cards!\n", loser.name)
+	fmt.Fprintf(g.writer, "*~*~*~* %s won the game! *~*~*~*\n", winner.name)
 }
 
 func (g Game) cardsPlayed(turnNumber int) {
@@ -116,14 +116,14 @@ func (g Game) cardsPlayed(turnNumber int) {
 		if i == 0 {
 			prefix = fmt.Sprintf("Turn %d:", turnNumber)
 		}
-		player1Card := g.player1.Deck.Cards[i]
-		player2Card := g.player2.Deck.Cards[i]
+		player1Card := g.player1.deck.cards[i]
+		player2Card := g.player2.deck.cards[i]
 		fmt.Fprintf(g.writer, "%s %s played %s and %s played %s\n",
 			prefix,
-			g.player1.Name, player1Card,
-			g.player2.Name, player2Card,
+			g.player1.name, player1Card,
+			g.player2.name, player2Card,
 		)
-		if player1Card.Rank != player2Card.Rank {
+		if player1Card.rank != player2Card.rank {
 			break
 		}
 	}

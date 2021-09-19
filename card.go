@@ -9,13 +9,13 @@ import (
 const errInvalidRecords = "invalid record: must contain exactly 3 fields"
 
 type Card struct {
-	Value string
-	Suit  string
-	Rank  int
+	value string
+	suit  string
+	rank  int
 }
 
 func (c Card) String() string {
-	return fmt.Sprintf("the %s of %ss", c.Value, c.Suit)
+	return fmt.Sprintf("the %s of %ss", c.value, c.suit)
 }
 
 func createCards(records [][]string) ([]Card, error) {

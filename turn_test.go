@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	player1   = &Player{Name: "Player1", Deck: &Deck{}}
-	player2   = &Player{Name: "Player2", Deck: &Deck{}}
+	player1   = &Player{name: "Player1", deck: &Deck{}}
+	player2   = &Player{name: "Player2", deck: &Deck{}}
 	emptyDeck = Deck{[]Card{}}
 )
 
@@ -63,11 +63,11 @@ func TestTurn(t *testing.T) {
 	}
 
 	for name, tc := range testCases {
-		player1.Deck.Cards = tc.player1Cards
-		player2.Deck.Cards = tc.player2Cards
+		player1.deck.cards = tc.player1Cards
+		player2.deck.cards = tc.player2Cards
 		turn := &Turn{
-			Player1: player1,
-			Player2: player2,
+			player1: player1,
+			player2: player2,
 		}
 		var allCards []Card
 		for i := 0; i < len(tc.player1Cards); i++ {
@@ -91,35 +91,35 @@ func TestTurn(t *testing.T) {
 				want = *tc.winner
 			}
 			if !reflect.DeepEqual(got, want) {
-				t.Errorf("got %v want %v", got.Name, want.Name)
+				t.Errorf("got %v want %v", got.name, want.name)
 			}
 		})
 
 		t.Run(name+" pile cards", func(t *testing.T) {
 			turn.PileCards()
 
-			if !reflect.DeepEqual(turn.SpoilsOfWar, allCards) {
-				t.Errorf("got %v want %v", turn.SpoilsOfWar, allCards)
+			if !reflect.DeepEqual(turn.spoilsOfWar, allCards) {
+				t.Errorf("got %v want %v", turn.spoilsOfWar, allCards)
 			}
-			if !reflect.DeepEqual(*player1.Deck, emptyDeck) {
-				t.Errorf("got %v want %v", player1.Deck, emptyDeck)
+			if !reflect.DeepEqual(*player1.deck, emptyDeck) {
+				t.Errorf("got %v want %v", player1.deck, emptyDeck)
 			}
-			if !reflect.DeepEqual(*player2.Deck, emptyDeck) {
-				t.Errorf("got %v want %v", player2.Deck, emptyDeck)
+			if !reflect.DeepEqual(*player2.deck, emptyDeck) {
+				t.Errorf("got %v want %v", player2.deck, emptyDeck)
 			}
 		})
 
 		t.Run(name+" award spoils", func(t *testing.T) {
 			turn.AwardSpoils(tc.winner)
 
-			if tc.winner != nil && !reflect.DeepEqual(tc.winner.Deck.Cards, allCards) {
-				t.Errorf("got %v want %v", tc.winner.Deck.Cards, allCards)
+			if tc.winner != nil && !reflect.DeepEqual(tc.winner.deck.cards, allCards) {
+				t.Errorf("got %v want %v", tc.winner.deck.cards, allCards)
 			}
-			if tc.winner != player2 && !reflect.DeepEqual(*player2.Deck, emptyDeck) {
-				t.Errorf("got %v want %v", player2.Deck, emptyDeck)
+			if tc.winner != player2 && !reflect.DeepEqual(*player2.deck, emptyDeck) {
+				t.Errorf("got %v want %v", player2.deck, emptyDeck)
 			}
-			if tc.winner != player1 && !reflect.DeepEqual(*player1.Deck, emptyDeck) {
-				t.Errorf("got %v want %v", player1.Deck, emptyDeck)
+			if tc.winner != player1 && !reflect.DeepEqual(*player1.deck, emptyDeck) {
+				t.Errorf("got %v want %v", player1.deck, emptyDeck)
 			}
 		})
 	}

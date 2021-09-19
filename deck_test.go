@@ -10,8 +10,8 @@ func TestRankOfCardAt(t *testing.T) {
 	t.Run("with cards", func(t *testing.T) {
 		for i, card := range testCards {
 			rank := testDeck.RankofCardAt(i)
-			if rank != card.Rank {
-				t.Errorf("got %d want %d", rank, card.Rank)
+			if rank != card.rank {
+				t.Errorf("got %d want %d", rank, card.rank)
 			}
 		}
 	})
@@ -48,7 +48,7 @@ func TestRemoveCard(t *testing.T) {
 	}
 
 	want := []Card{testCards[1], testCards[2]}
-	if !reflect.DeepEqual(deck.Cards, want) {
+	if !reflect.DeepEqual(deck.cards, want) {
 		t.Errorf("%v should have been removed from deck but was not", testCards[0])
 	}
 
@@ -70,8 +70,8 @@ func TestAddCard(t *testing.T) {
 	deck.AddCards([]Card{card4})
 
 	want := []Card{testCards[1], testCards[2], card4}
-	if !reflect.DeepEqual(deck.Cards, want) {
-		t.Errorf("got %v want %v for deck after adding new card", deck.Cards, want)
+	if !reflect.DeepEqual(deck.cards, want) {
+		t.Errorf("got %v want %v for deck after adding new card", deck.cards, want)
 	}
 
 	got := deck.HighRankingCards()
@@ -137,7 +137,7 @@ func TestNewFromCSV(t *testing.T) {
 					t.Errorf("expected an error but didn't get one")
 				}
 			default:
-				got := len(deck.Cards)
+				got := len(deck.cards)
 				want := tc.length
 				if got != want {
 					t.Errorf("got %d want %d", got, want)
