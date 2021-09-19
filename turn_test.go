@@ -62,8 +62,8 @@ func TestTurn(t *testing.T) {
 		player1.Deck.Cards = tc.player1Cards
 		player2.Deck.Cards = tc.player2Cards
 		turn := &Turn{
-			Player1: *player1,
-			Player2: *player2,
+			Player1: player1,
+			Player2: player2,
 		}
 		var allCards []Card
 		for i := 0; i < len(tc.player1Cards); i++ {

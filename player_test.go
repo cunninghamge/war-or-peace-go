@@ -6,7 +6,7 @@ import (
 
 func TestHasLost(t *testing.T) {
 	deck := &Deck{testCards}
-	player := Player{"Clarissa", deck}
+	player := Player{Name: "Clarissa", Deck: deck}
 
 	for i := 0; i < 3; i++ {
 		if player.HasLost() {

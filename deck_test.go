@@ -67,7 +67,7 @@ func TestAddCard(t *testing.T) {
 	deck := Deck{[]Card{testCards[1], testCards[2]}}
 	card4 := Card{"club", "5", 5}
 
-	deck.AddCard(card4)
+	deck.AddCards([]Card{card4})
 
 	want := []Card{testCards[1], testCards[2], card4}
 	if !reflect.DeepEqual(deck.Cards, want) {
@@ -83,6 +83,18 @@ func TestAddCard(t *testing.T) {
 	if newPct != 33.33 {
 		t.Errorf("newPct %f want %f for new percent high ranking", newPct, 33.3)
 	}
+}
+
+func TestShuffle(t *testing.T) {
+	deck := Deck{[]Card{testCards[0], testCards[1], testCards[2]}}
+	for i := 0; i < 30; i++ {
+		shuffledDeck := Deck{[]Card{testCards[0], testCards[1], testCards[2]}}.Shuffle()
+		if !reflect.DeepEqual(deck, shuffledDeck) {
+			return
+		}
+	}
+
+	t.Error("failed to randomize card order")
 }
 
 func TestNewFromCSV(t *testing.T) {

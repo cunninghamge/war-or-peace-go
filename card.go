@@ -9,8 +9,8 @@ import (
 const errInvalidRecords = "invalid record: must contain exactly 3 fields"
 
 type Card struct {
-	Suit  string
 	Value string
+	Suit  string
 	Rank  int
 }
 

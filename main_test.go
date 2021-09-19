@@ -14,9 +14,9 @@ var (
 
 func TestMain(m *testing.M) {
 	testCards = []Card{
-		{"diamond", "Queen", 12},
-		{"spade", "3", 3},
-		{"heart", "Ace", 14},
+		{"Queen", "diamond", 12},
+		{"3", "spade", 3},
+		{"Ace", "heart", 14},
 	}
 	testDeck = Deck{testCards[:3]}
 

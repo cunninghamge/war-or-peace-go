@@ -1,8 +1,9 @@
 package main
 
 type Turn struct {
-	Player1, Player2 Player
+	Player1, Player2 *Player
 	SpoilsOfWar      []Card
+	winner           *Player
 }
 
 type TurnType int
@@ -37,30 +38,29 @@ func (t Turn) Winner() *Player {
 	}
 
 	if t.Player1.Deck.RankofCardAt(index) > t.Player2.Deck.RankofCardAt(index) {
-		return &t.Player1
+		t.winner = t.Player1
 	} else {
-		return &t.Player2
+		t.winner = t.Player2
 	}
+	return t.winner
 }
 
 func (t *Turn) PileCards() {
 	turnType := t.Type()
 	for i := 0; i < 3; i++ {
-		if turnType == basic && i > 0 {
-			return
-		}
 		for _, deck := range []*Deck{t.Player1.Deck, t.Player2.Deck} {
 			if len(deck.Cards) > 0 {
 				t.SpoilsOfWar = append(t.SpoilsOfWar, deck.RemoveCard())
 			}
+		}
+		if turnType == basic {
+			break
 		}
 	}
 }
 
 func (t *Turn) AwardSpoils(winner *Player) {
 	if winner != nil {
-		for _, card := range t.SpoilsOfWar {
-			winner.Deck.AddCard(card)
-		}
+		winner.Deck.AddCards(t.SpoilsOfWar)
 	}
 }

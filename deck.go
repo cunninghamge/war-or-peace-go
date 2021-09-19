@@ -2,9 +2,12 @@ package main
 
 import (
 	"math"
+	"math/rand"
+	"time"
 	"war-or-peace/reader"
 )
 
+// TODO change deck type from struct to []Card
 type Deck struct {
 	Cards []Card
 }
@@ -39,8 +42,19 @@ func (d *Deck) RemoveCard() Card {
 	return card
 }
 
-func (d *Deck) AddCard(card Card) {
-	d.Cards = append(d.Cards, card)
+func (d *Deck) AddCards(newCards []Card) {
+	tempCards := make([]Card, 0, len(d.Cards)+len(newCards))
+	tempCards = append(tempCards, d.Cards...)
+	tempCards = append(tempCards, newCards...)
+	d.Cards = tempCards
+}
+
+func (d Deck) Shuffle() Deck {
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(d.Cards), func(i, j int) {
+		d.Cards[i], d.Cards[j] = d.Cards[j], d.Cards[i]
+	})
+	return d
 }
 
 func (d *Deck) NewFromCSV(filepath string) error {
