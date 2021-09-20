@@ -1,7 +1,6 @@
 package main
 
 import (
-	"math"
 	"math/rand"
 	"time"
 	"war-or-peace/reader"
@@ -17,23 +16,6 @@ func (d Deck) RankofCardAt(index int) int {
 		return 0
 	}
 	return d.cards[index].rank
-}
-
-func (d Deck) HighRankingCards() []Card {
-	var cards []Card
-	for _, card := range d.cards {
-		if card.rank > 10 {
-			cards = append(cards, card)
-		}
-	}
-	return cards
-}
-
-func (d Deck) PercentHighRanking() float64 {
-	numHighRanking := len(d.HighRankingCards())
-	numCards := len(d.cards)
-	pct := float64(numHighRanking) / float64(numCards)
-	return math.Round(pct*10000) / 100
 }
 
 func (d *Deck) RemoveCard() Card {

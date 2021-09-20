@@ -17,27 +17,11 @@ func TestRankOfCardAt(t *testing.T) {
 	})
 
 	t.Run("with insufficient cards", func(t *testing.T) {
-		rank := testDeck.RankofCardAt(3)
+		rank := testDeck.RankofCardAt(4)
 		if rank != 0 {
 			t.Errorf("got %d want %d", rank, 0)
 		}
 	})
-}
-
-func TestHighRankingCards(t *testing.T) {
-	got := testDeck.HighRankingCards()
-	want := []Card{testCards[0], testCards[2]}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v want %v", got, want)
-	}
-}
-
-func TestPercentHighRanking(t *testing.T) {
-	got := testDeck.PercentHighRanking()
-	want := 66.67
-	if got != want {
-		t.Errorf("got %f want %f", got, want)
-	}
 }
 
 func TestRemoveCard(t *testing.T) {
@@ -47,25 +31,15 @@ func TestRemoveCard(t *testing.T) {
 		t.Errorf("got %v want %v for remove card", removed, testCards[0])
 	}
 
-	want := []Card{testCards[1], testCards[2]}
+	want := testCards[1:]
 	if !reflect.DeepEqual(deck.cards, want) {
 		t.Errorf("%v should have been removed from deck but was not", testCards[0])
 	}
-
-	got := deck.HighRankingCards()
-	if !reflect.DeepEqual(got, []Card{testCards[2]}) {
-		t.Errorf("got %v want %v for new high ranking cards", got, []Card{testCards[2]})
-	}
-
-	newPct := deck.PercentHighRanking()
-	if newPct != 50.00 {
-		t.Errorf("newPct %f want %f for new percent high ranking", newPct, 50.00)
-	}
 }
 
-func TestAddCard(t *testing.T) {
+func TestAddCards(t *testing.T) {
 	deck := Deck{[]Card{testCards[1], testCards[2]}}
-	card4 := Card{"club", "5", 5}
+	card4 := Card{"5", "club", 5}
 
 	deck.AddCards([]Card{card4})
 
@@ -73,22 +47,13 @@ func TestAddCard(t *testing.T) {
 	if !reflect.DeepEqual(deck.cards, want) {
 		t.Errorf("got %v want %v for deck after adding new card", deck.cards, want)
 	}
-
-	got := deck.HighRankingCards()
-	if !reflect.DeepEqual(got, []Card{testCards[2]}) {
-		t.Errorf("got %v want %v for new high ranking cards", got, []Card{testCards[3]})
-	}
-
-	newPct := deck.PercentHighRanking()
-	if newPct != 33.33 {
-		t.Errorf("newPct %f want %f for new percent high ranking", newPct, 33.3)
-	}
 }
 
 func TestShuffle(t *testing.T) {
 	deck := Deck{[]Card{testCards[0], testCards[1], testCards[2]}}
 	for i := 0; i < 30; i++ {
-		shuffledDeck := Deck{[]Card{testCards[0], testCards[1], testCards[2]}}.Shuffle()
+		shuffledDeck := &Deck{deck.cards}
+		shuffledDeck.Shuffle()
 		if !reflect.DeepEqual(deck, shuffledDeck) {
 			return
 		}
