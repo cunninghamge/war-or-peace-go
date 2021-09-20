@@ -114,7 +114,7 @@ func (g Game) canPlayWar() bool {
 	for _, player := range []*Player{g.player1, g.player2} {
 		if player.CardsLeft() <= 3 {
 			fmt.Fprintf(g.writer, "		%s does not have enough cards for war!\n", player.name)
-			player.hasLost = true
+			player.lost = true
 			canPlayWar = false
 		}
 	}

@@ -516,7 +516,7 @@ func TestDisplayResult(t *testing.T) {
 				deck: &Deck{[]Card{
 					{"Queen", "diamond", 12},
 				}},
-				hasLost: true,
+				lost: true,
 			},
 			player2: &Player{
 				name: "Player2",
@@ -545,14 +545,14 @@ func TestDisplayResult(t *testing.T) {
 				deck: &Deck{[]Card{
 					{"Queen", "diamond", 12},
 				}},
-				hasLost: true,
+				lost: true,
 			},
 			player2: &Player{
 				name: "Player2",
 				deck: &Deck{[]Card{
 					{"10", "diamond", 10},
 				}},
-				hasLost: true,
+				lost: true,
 			},
 			want: "*~*~*~* It's a draw! *~*~*~*\n",
 		},

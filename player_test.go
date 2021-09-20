@@ -35,7 +35,7 @@ func TestHasLost(t *testing.T) {
 
 	t.Run("with cards", func(t *testing.T) {
 		deck := &Deck{testCards}
-		player := Player{name: "Clarissa", deck: deck, hasLost: true}
+		player := Player{name: "Clarissa", deck: deck, lost: true}
 
 		if !player.HasLost() {
 			t.Errorf("player has not lost but has no cards")

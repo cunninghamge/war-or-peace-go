@@ -1,16 +1,15 @@
 package main
 
 type Player struct {
-	name    string
-	deck    *Deck
-	hasLost bool
+	name string
+	deck *Deck
+	lost bool
 }
 
 func (p Player) CardsLeft() int {
 	return len(p.deck.cards)
 }
 
-// TODO get rid of this method
 func (p Player) HasLost() bool {
-	return p.hasLost || len(p.deck.cards) == 0
+	return p.lost || len(p.deck.cards) == 0
 }
