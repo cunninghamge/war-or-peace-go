@@ -27,36 +27,36 @@ func TestCreateCards(t *testing.T) {
 	}{
 		"success": {
 			records: [][]string{
-				{"suit", "value", "1"},
-				{"suit", "value", "1"},
+				{"value", "suit", "1"},
+				{"value", "suit", "1"},
 			},
 			deckLength: 2,
 		},
 		"too few fields": {
 			records: [][]string{
-				{"suit", "value"},
-				{"suit", "value"},
+				{"value", "suit"},
+				{"value", "suit"},
 			},
 			wantError: errInvalidRecords,
 		},
 		"too many fields": {
 			records: [][]string{
-				{"suit", "value", "1", "extra field"},
-				{"suit", "value", "1", "extra field"},
+				{"value", "suit", "1", "extra field"},
+				{"value", "suit", "1", "extra field"},
 			},
 			wantError: errInvalidRecords,
 		},
 		"different numbers of fields": {
 			records: [][]string{
-				{"suit", "value"},
-				{"suit", "value", "1", "extra field"},
-				{"suit", "value", "1"},
+				{"value", "suit"},
+				{"value", "suit", "1", "extra field"},
+				{"value", "suit", "1"},
 			},
 			wantError: errInvalidRecords,
 		},
 		"rank can't be converted to int": {
 			records: [][]string{
-				{"suit", "value", "17x"},
+				{"value", "suit", "17x"},
 			},
 			wantError: "strconv.Atoi: parsing \"17x\": invalid syntax",
 		},
