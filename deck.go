@@ -31,28 +31,27 @@ func (d *Deck) AddCards(newCards []Card) {
 	d.cards = tempCards
 }
 
-func (d Deck) Shuffle() Deck {
+func (d *Deck) Shuffle() {
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(d.cards), func(i, j int) {
 		d.cards[i], d.cards[j] = d.cards[j], d.cards[i]
 	})
-	return d
 }
 
-func (d *Deck) NewFromCSV(filepath string) error {
+func NewDeckFromCSV(filepath string) (*Deck, error) {
 	var source = "fixtures/cards.csv"
 	if len(filepath) > 0 {
 		source = filepath
 	}
 	records, err := reader.ReadFile(source)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	d.cards, err = createCards(records)
+	cards, err := createCards(records)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &Deck{cards}, nil
 }

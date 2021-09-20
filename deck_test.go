@@ -62,7 +62,7 @@ func TestShuffle(t *testing.T) {
 	t.Error("failed to randomize card order")
 }
 
-func TestNewFromCSV(t *testing.T) {
+func TestNewDeckFromCSV(t *testing.T) {
 	os.WriteFile("reader_err.csv", []byte("a,b,c\nd,e"), 0644)
 	defer os.Remove("reader_err.csv")
 	os.WriteFile("card_err.csv", []byte("a,b\nd,e"), 0644)
@@ -93,8 +93,7 @@ func TestNewFromCSV(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.filepath, func(t *testing.T) {
-			var deck = &Deck{}
-			err := deck.NewFromCSV(tc.filepath)
+			deck, err := NewDeckFromCSV(tc.filepath)
 
 			switch tc.wantErr {
 			case true:
