@@ -45,7 +45,7 @@ func (t *Turn) PileCards() {
 	turnType := t.Type()
 	for i := 0; i < 4; i++ {
 		for _, deck := range []*Deck{t.player1.deck, t.player2.deck} {
-			if len(deck.cards) > 0 {
+			if len(*deck) > 0 {
 				t.spoilsOfWar = append(t.spoilsOfWar, deck.RemoveCard())
 			}
 		}

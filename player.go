@@ -7,9 +7,9 @@ type Player struct {
 }
 
 func (p Player) CardsLeft() int {
-	return len(p.deck.cards)
+	return len(*p.deck)
 }
 
 func (p Player) HasLost() bool {
-	return p.lost || len(p.deck.cards) == 0
+	return p.lost || len(*p.deck) == 0
 }

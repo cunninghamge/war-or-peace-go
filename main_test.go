@@ -19,7 +19,7 @@ func TestMain(m *testing.M) {
 		{"Ace", "heart", 14},
 		{"7", "club", 7},
 	}
-	testDeck = Deck{testCards}
+	testDeck = Deck(testCards)
 
 	code := m.Run()
 	os.Exit(code)

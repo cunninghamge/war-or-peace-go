@@ -5,10 +5,10 @@ import (
 )
 
 func TestCardsLeft(t *testing.T) {
-	deck := &Deck{testCards}
-	player := Player{name: "Clarissa", deck: deck}
+	deck := Deck(testCards)
+	player := Player{name: "Clarissa", deck: &deck}
 
-	for i := len(deck.cards); i > 0; i-- {
+	for i := len(deck); i > 0; i-- {
 		if player.CardsLeft() != i {
 			t.Errorf("got %d want %d", player.CardsLeft(), i)
 		}
@@ -18,8 +18,8 @@ func TestCardsLeft(t *testing.T) {
 
 func TestHasLost(t *testing.T) {
 	t.Run("with no cards", func(t *testing.T) {
-		deck := &Deck{testCards}
-		player := Player{name: "Clarissa", deck: deck}
+		deck := Deck(testCards)
+		player := Player{name: "Clarissa", deck: &deck}
 
 		for i := 0; i < 4; i++ {
 			if player.HasLost() {
@@ -34,8 +34,8 @@ func TestHasLost(t *testing.T) {
 	})
 
 	t.Run("with cards", func(t *testing.T) {
-		deck := &Deck{testCards}
-		player := Player{name: "Clarissa", deck: deck, lost: true}
+		deck := Deck(testCards)
+		player := Player{name: "Clarissa", deck: &deck, lost: true}
 
 		if !player.HasLost() {
 			t.Errorf("player has not lost but has no cards")

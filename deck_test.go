@@ -25,34 +25,35 @@ func TestRankOfCardAt(t *testing.T) {
 }
 
 func TestRemoveCard(t *testing.T) {
-	deck := Deck{testCards}
+	deck := Deck(testCards)
 	removed := deck.RemoveCard()
 	if removed != testCards[0] {
 		t.Errorf("got %v want %v for remove card", removed, testCards[0])
 	}
 
-	want := testCards[1:]
-	if !reflect.DeepEqual(deck.cards, want) {
+	want := Deck(testCards[1:])
+	if !reflect.DeepEqual(deck, want) {
 		t.Errorf("%v should have been removed from deck but was not", testCards[0])
 	}
 }
 
 func TestAddCards(t *testing.T) {
-	deck := Deck{[]Card{testCards[1], testCards[2]}}
+	deck := Deck{testCards[1], testCards[2]}
 	card4 := Card{"5", "club", 5}
 
 	deck.AddCards([]Card{card4})
 
-	want := []Card{testCards[1], testCards[2], card4}
-	if !reflect.DeepEqual(deck.cards, want) {
-		t.Errorf("got %v want %v for deck after adding new card", deck.cards, want)
+	want := Deck{testCards[1], testCards[2], card4}
+	if !reflect.DeepEqual(deck, want) {
+		t.Errorf("got %v want %v for deck after adding new card", deck, want)
 	}
 }
 
 func TestShuffle(t *testing.T) {
-	deck := Deck{[]Card{testCards[0], testCards[1], testCards[2]}}
+	deck := Deck{testCards[0], testCards[1], testCards[2]}
 	for i := 0; i < 30; i++ {
-		shuffledDeck := &Deck{deck.cards}
+		shuffledDeck := make(Deck, len(deck))
+		copy(shuffledDeck, deck)
 		shuffledDeck.Shuffle()
 		if !reflect.DeepEqual(deck, shuffledDeck) {
 			return
@@ -101,7 +102,7 @@ func TestNewDeckFromCSV(t *testing.T) {
 					t.Errorf("expected an error but didn't get one")
 				}
 			default:
-				got := len(deck.cards)
+				got := len(deck)
 				want := tc.length
 				if got != want {
 					t.Errorf("got %d want %d", got, want)

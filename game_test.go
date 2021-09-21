@@ -25,7 +25,7 @@ Enter player 1: Enter player 2: The players today are Player1 and Player2.
 		t.Errorf("got\n%s\n  want\n%s\n", got, want)
 	}
 	card1, card2 := Card{"2", "diamond", 2}, Card{"8", "spade", 8}
-	p1Card, p2Card := game.player1.deck.cards[0], game.player2.deck.cards[0]
+	p1Card, p2Card := (*game.player1.deck)[0], (*game.player2.deck)[0]
 	if !reflect.DeepEqual(p1Card, card1) && !reflect.DeepEqual(p1Card, card2) {
 		t.Errorf("got %v want %v or %v", p1Card, card1, card2)
 	}
@@ -41,8 +41,8 @@ func TestGetPlayers(t *testing.T) {
 	game := Game{
 		scanner: bufio.NewScanner(reader),
 		writer:  writer,
-		player1: &Player{deck: &Deck{[]Card{}}},
-		player2: &Player{deck: &Deck{[]Card{}}},
+		player1: &Player{deck: &Deck{}},
+		player2: &Player{deck: &Deck{}},
 	}
 
 	game.getPlayers()
@@ -63,10 +63,10 @@ func TestGetPlayers(t *testing.T) {
 
 func TestDeal(t *testing.T) {
 	game := Game{
-		player1: &Player{deck: &Deck{[]Card{}}},
-		player2: &Player{deck: &Deck{[]Card{}}},
+		player1: &Player{deck: &Deck{}},
+		player2: &Player{deck: &Deck{}},
 	}
-	deck := &Deck{testCards}
+	deck := Deck(testCards)
 
 	game.deal(deck)
 
@@ -94,8 +94,14 @@ func TestStart(t *testing.T) {
 			game := Game{
 				scanner: bufio.NewScanner(reader),
 				writer:  writer,
-				player1: &Player{name: "A", deck: &Deck{testCards[:2]}},
-				player2: &Player{name: "B", deck: &Deck{testCards[2:]}},
+				player1: &Player{name: "A", deck: &Deck{
+					testCards[0],
+					testCards[1],
+				}},
+				player2: &Player{name: "B", deck: &Deck{
+					testCards[2],
+					testCards[3],
+				}},
 			}
 
 			game.start()
@@ -116,23 +122,23 @@ func TestPlay(t *testing.T) {
 			writer:  writer,
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"2", "spade", 2},
 					{"9", "club", 9},
 					{"Ace", "heart", 14},
 					{"3", "diamond", 3},
 					{"4", "club", 4},
-				}},
+				},
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"3", "club", 3},
 					{"9", "spade", 9},
 					{"Ace", "spade", 14},
 					{"3", "heart", 3},
 					{"5", "diamond", 5},
-				}},
+				},
 			},
 		}
 
@@ -163,17 +169,17 @@ Player1 is out of cards!
 			writer:  writer,
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"2", "spade", 2},
 					{"4", "club", 4},
-				}},
+				},
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"5", "diamond", 5},
 					{"3", "club", 3},
-				}},
+				},
 			},
 		}
 
@@ -196,15 +202,15 @@ func TestShowCards(t *testing.T) {
 		writer:  writer,
 		player1: &Player{
 			name: "Player1",
-			deck: &Deck{[]Card{
+			deck: &Deck{
 				{"Queen", "diamond", 12},
-			}},
+			},
 		},
 		player2: &Player{
 			name: "Player2",
-			deck: &Deck{[]Card{
+			deck: &Deck{
 				{"10", "heart", 10},
-			}},
+			},
 		},
 	}
 
@@ -226,39 +232,39 @@ func TestCanPlayWar(t *testing.T) {
 		"both players have enough cards": {
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"Queen", "diamond", 12},
 					{"Queen", "diamond", 12},
 					{"Queen", "diamond", 12},
 					{"Queen", "diamond", 12},
-				}},
+				},
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"10", "heart", 10},
 					{"10", "heart", 10},
 					{"10", "heart", 10},
 					{"10", "heart", 10},
-				}},
+				},
 			},
 			result: true,
 		},
 		"one players has enough cards": {
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"Queen", "diamond", 12},
 					{"Queen", "diamond", 12},
 					{"Queen", "diamond", 12},
 					{"Queen", "diamond", 12},
-				}},
+				},
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"10", "heart", 10},
-				}},
+				},
 			},
 			result: false,
 			want: "		Player2 does not have enough cards for war!\n",
@@ -266,15 +272,15 @@ func TestCanPlayWar(t *testing.T) {
 		"neither player has enough cards": {
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"Queen", "diamond", 12},
-				}},
+				},
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"10", "heart", 10},
-				}},
+				},
 			},
 			result: false,
 			want: "		Player1 does not have enough cards for war!\n" +
@@ -306,18 +312,17 @@ func TestCanPlayWar(t *testing.T) {
 
 func TestWar(t *testing.T) {
 	testCases := map[string]struct {
-		player1Cards []Card
-		player2Cards []Card
-		want         string
+		player1Deck, player2Deck Deck
+		want                     string
 	}{
 		"war: first card wins": {
-			player1Cards: []Card{
+			player1Deck: Deck{
 				{"Queen", "diamond", 12},
 				{"2", "club", 2},
 				{"7", "spade", 7},
 				{"4", "heart", 4},
 			},
-			player2Cards: []Card{
+			player2Deck: Deck{
 				{"Queen", "heart", 12},
 				{"10", "diamond", 10},
 				{"5", "spade", 5},
@@ -326,13 +331,13 @@ func TestWar(t *testing.T) {
 			want: "	WAR!	Player1 played the 4 of hearts and Player2 played the 3 of clubs\n",
 		},
 		"war: second card wins": {
-			player1Cards: []Card{
+			player1Deck: Deck{
 				{"Queen", "diamond", 12},
 				{"2", "club", 2},
 				{"7", "spade", 7},
 				{"3", "heart", 3},
 			},
-			player2Cards: []Card{
+			player2Deck: Deck{
 				{"Queen", "heart", 12},
 				{"10", "diamond", 10},
 				{"5", "spade", 5},
@@ -342,13 +347,13 @@ func TestWar(t *testing.T) {
 				"	WAR!	Player1 played the 7 of spades and Player2 played the 5 of spades\n",
 		},
 		"war: last card wins": {
-			player1Cards: []Card{
+			player1Deck: Deck{
 				{"Queen", "diamond", 12},
 				{"10", "diamond", 10},
 				{"7", "spade", 7},
 				{"3", "heart", 3},
 			},
-			player2Cards: []Card{
+			player2Deck: Deck{
 				{"Queen", "heart", 12},
 				{"2", "club", 2},
 				{"7", "club", 7},
@@ -359,13 +364,13 @@ func TestWar(t *testing.T) {
 				"	WAR!	Player1 played the 10 of diamonds and Player2 played the 2 of clubs\n",
 		},
 		"mutually assured destruction": {
-			player1Cards: []Card{
+			player1Deck: Deck{
 				{"Queen", "diamond", 12},
 				{"10", "diamond", 10},
 				{"7", "spade", 7},
 				{"3", "heart", 3},
 			},
-			player2Cards: []Card{
+			player2Deck: Deck{
 				{"Queen", "heart", 12},
 				{"10", "club", 10},
 				{"7", "club", 7},
@@ -385,11 +390,11 @@ func TestWar(t *testing.T) {
 				writer:  writer,
 				player1: &Player{
 					name: "Player1",
-					deck: &Deck{tc.player1Cards},
+					deck: &tc.player1Deck,
 				},
 				player2: &Player{
 					name: "Player2",
-					deck: &Deck{tc.player2Cards},
+					deck: &tc.player2Deck,
 				},
 			}
 
@@ -406,15 +411,15 @@ func TestWar(t *testing.T) {
 
 func TestAwardSpoils(t *testing.T) {
 	testCases := map[string]struct {
-		player1Cards, player2Cards         []Card
+		player1Deck, player2Deck           Deck
 		player1CardsLeft, player2CardsLeft int
 		want                               string
 	}{
 		"basic turn": {
-			player1Cards: []Card{
+			player1Deck: Deck{
 				{"Queen", "diamond", 12},
 			},
-			player2Cards: []Card{
+			player2Deck: Deck{
 				{"10", "diamond", 10},
 			},
 			want: "		Player1 won 2 cards\n\n",
@@ -422,13 +427,13 @@ func TestAwardSpoils(t *testing.T) {
 			player2CardsLeft: 0,
 		},
 		"war turn": {
-			player1Cards: []Card{
+			player1Deck: Deck{
 				{"Queen", "diamond", 12},
 				{"2", "club", 2},
 				{"7", "spade", 7},
 				{"3", "club", 3},
 			},
-			player2Cards: []Card{
+			player2Deck: Deck{
 				{"Queen", "heart", 12},
 				{"10", "diamond", 10},
 				{"5", "spade", 5},
@@ -439,13 +444,13 @@ func TestAwardSpoils(t *testing.T) {
 			player2CardsLeft: 8,
 		},
 		"mutually assured destruction": {
-			player1Cards: []Card{
+			player1Deck: Deck{
 				{"Queen", "diamond", 12},
 				{"10", "diamond", 10},
 				{"7", "spade", 7},
 				{"3", "heart", 3},
 			},
-			player2Cards: []Card{
+			player2Deck: Deck{
 				{"Queen", "heart", 12},
 				{"10", "club", 10},
 				{"7", "club", 7},
@@ -465,11 +470,11 @@ func TestAwardSpoils(t *testing.T) {
 				writer:  writer,
 				player1: &Player{
 					name: "Player1",
-					deck: &Deck{tc.player1Cards},
+					deck: &tc.player1Deck,
 				},
 				player2: &Player{
 					name: "Player2",
-					deck: &Deck{tc.player2Cards},
+					deck: &tc.player2Deck,
 				},
 			}
 			turn := Turn{player1: game.player1, player2: game.player2}
@@ -499,13 +504,13 @@ func TestDisplayResult(t *testing.T) {
 		"one player is out of cards": {
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{}},
+				deck: &Deck{},
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"10", "diamond", 10},
-				}},
+				},
 			},
 			want: "Player1 is out of cards!\n" +
 				"*~*~*~* Player2 won the game! *~*~*~*\n",
@@ -513,27 +518,27 @@ func TestDisplayResult(t *testing.T) {
 		"one player has cards but has lost": {
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"Queen", "diamond", 12},
-				}},
+				},
 				lost: true,
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"10", "diamond", 10},
-				}},
+				},
 			},
 			want: "*~*~*~* Player2 won the game! *~*~*~*\n",
 		},
 		"both players are out of cards": {
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{}},
+				deck: &Deck{},
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{}},
+				deck: &Deck{},
 			},
 			want: "Player1 is out of cards!\n" +
 				"Player2 is out of cards!\n" +
@@ -542,16 +547,16 @@ func TestDisplayResult(t *testing.T) {
 		"both players have cards but have lost": {
 			player1: &Player{
 				name: "Player1",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"Queen", "diamond", 12},
-				}},
+				},
 				lost: true,
 			},
 			player2: &Player{
 				name: "Player2",
-				deck: &Deck{[]Card{
+				deck: &Deck{
 					{"10", "diamond", 10},
-				}},
+				},
 				lost: true,
 			},
 			want: "*~*~*~* It's a draw! *~*~*~*\n",

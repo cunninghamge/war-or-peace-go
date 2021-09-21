@@ -24,15 +24,15 @@ func newGame(filepath string, r io.Reader, w io.Writer) Game {
 	game := Game{
 		scanner: bufio.NewScanner(r),
 		writer:  w,
-		player1: &Player{deck: &Deck{[]Card{}}},
-		player2: &Player{deck: &Deck{[]Card{}}},
+		player1: &Player{deck: &Deck{}},
+		player2: &Player{deck: &Deck{}},
 	}
 
 	deck, err := NewDeckFromCSV(filepath)
 	if err != nil {
 		exitWithError(err)
 	}
-	fmt.Fprintf(game.writer, "%sThis game will be played with %d cards.\n", welcomeMessage, len(deck.cards))
+	fmt.Fprintf(game.writer, "%sThis game will be played with %d cards.\n", welcomeMessage, len(deck))
 
 	game.getPlayers()
 	game.deal(deck)
@@ -53,14 +53,14 @@ func (g Game) getPlayers() {
 		g.player1.name, g.player2.name)
 }
 
-func (g Game) deal(deck *Deck) {
+func (g Game) deal(deck Deck) {
 	deck.Shuffle()
-	for i := 0; i < len(deck.cards); i++ {
+	for i := 0; i < len(deck); i++ {
 		switch i%2 == 0 {
 		case true:
-			g.player1.deck.AddCards([]Card{deck.cards[i]})
+			g.player1.deck.AddCards([]Card{deck[i]})
 		case false:
-			g.player2.deck.AddCards([]Card{deck.cards[i]})
+			g.player2.deck.AddCards([]Card{deck[i]})
 		}
 	}
 }
@@ -104,8 +104,8 @@ func (g Game) play() {
 func (g Game) showCards(i int, prefix string) {
 	fmt.Fprintf(g.writer, "%s%s played %s and %s played %s\n",
 		prefix,
-		g.player1.name, g.player1.deck.cards[i],
-		g.player2.name, g.player2.deck.cards[i],
+		g.player1.name, (*g.player1.deck)[i],
+		g.player2.name, (*g.player2.deck)[i],
 	)
 }
 
