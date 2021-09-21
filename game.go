@@ -7,13 +7,6 @@ import (
 	"strings"
 )
 
-var (
-	welcomeMessage = "Welcome to War!\n"
-	startMessage   = "Type 'GO' to start the game!\n" +
-		strings.Repeat("-", 40) + "\n"
-	enterPlayerName = "Enter player %d: "
-)
-
 type Game struct {
 	scanner          *bufio.Scanner
 	writer           io.Writer
@@ -32,7 +25,7 @@ func newGame(filepath string, r io.Reader, w io.Writer) Game {
 	if err != nil {
 		exitWithError(err)
 	}
-	fmt.Fprintf(game.writer, "%sThis game will be played with %d cards.\n", welcomeMessage, len(deck))
+	fmt.Fprintf(game.writer, "Welcome to War!\nThis game will be played with %d cards.\n", len(deck))
 
 	game.getPlayers()
 	game.deal(deck)
@@ -41,11 +34,11 @@ func newGame(filepath string, r io.Reader, w io.Writer) Game {
 }
 
 func (g Game) getPlayers() {
-	fmt.Fprintf(g.writer, enterPlayerName, 1)
+	fmt.Fprintf(g.writer, "Enter player %d: ", 1)
 	g.scanner.Scan()
 	g.player1.name = g.scanner.Text()
 
-	fmt.Fprintf(g.writer, enterPlayerName, 2)
+	fmt.Fprintf(g.writer, "Enter player %d: ", 2)
 	g.scanner.Scan()
 	g.player2.name = g.scanner.Text()
 
@@ -68,7 +61,8 @@ func (g Game) deal(deck Deck) {
 func (g Game) start() {
 	var cmd string
 	for cmd != "GO" {
-		fmt.Fprint(g.writer, startMessage)
+		fmt.Fprint(g.writer, "Type 'GO' to start the game!\n"+
+			strings.Repeat("-", 40)+"\n")
 		g.scanner.Scan()
 		cmd = strings.ToUpper(g.scanner.Text())
 		if cmd == "Q" {
@@ -147,20 +141,16 @@ func (g Game) awardSpoils(turn Turn) {
 }
 
 func (g Game) displayResult() {
-	var winner *Player
-	player, opponent := g.player1, g.player2
-	for i := 0; i < 2; i++ {
+	for _, player := range []*Player{g.player1, g.player2} {
 		if player.CardsLeft() == 0 {
 			fmt.Fprintf(g.writer, "%s is out of cards!\n", player.name)
 		}
-		if player.HasLost() && !opponent.HasLost() {
-			winner = opponent
+		if !player.HasLost() {
+			defer fmt.Fprintf(g.writer, "*~*~*~* %s won the game! *~*~*~*\n", player.name)
 		}
-		player, opponent = opponent, player
 	}
-	if winner != nil {
-		fmt.Fprintf(g.writer, "*~*~*~* %s won the game! *~*~*~*\n", winner.name)
-	} else {
+
+	if g.player1.HasLost() && g.player2.HasLost() {
 		fmt.Fprintf(g.writer, "*~*~*~* It's a draw! *~*~*~*\n")
 	}
 }

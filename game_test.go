@@ -79,6 +79,7 @@ func TestDeal(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
+	startMessage := "Type 'GO' to start the game!\n" + strings.Repeat("-", 40) + "\n"
 	testCases := map[string]string{
 		"GO\n":   startMessage + "Turn 1: A has 2 cards left and B has 2 cards left\n",
 		"go\n":   startMessage + "Turn 1: A has 2 cards left and B has 2 cards left\n",
