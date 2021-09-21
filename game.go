@@ -1,159 +1,156 @@
 package main
 
 import (
-	"encoding/csv"
+	"bufio"
 	"fmt"
 	"io"
-	"math/rand"
-	"os"
-	"strconv"
-	"time"
+	"strings"
 )
 
-func Start(filename string) {
-	// cards := NewDeck()
-	cards := NewDeckFromCSV(filename)
-	player1, player2 := NewPlayers(cards)
-	fmt.Println("Welcome to War! (or Peace) This game wil be played with 52 cards.")
-	fmt.Printf("The players today are %s and %s.\n", player1.Name, player2.Name)
-	fmt.Println("Type 'GO' to start the game!")
-	fmt.Println("-----------------------------------------------------------------")
+type Game struct {
+	scanner          *bufio.Scanner
+	writer           io.Writer
+	player1, player2 *Player
+}
 
-	for i := 1; i <= 10_000; i++ {
-		PlayTurn(player1, player2, i)
+func newGame(filepath string, r io.Reader, w io.Writer) Game {
+	game := Game{
+		scanner: bufio.NewScanner(r),
+		writer:  w,
+		player1: &Player{deck: &Deck{}},
+		player2: &Player{deck: &Deck{}},
+	}
 
-		gameOver := GameOver(player1, player2, i)
-		if gameOver {
-			break
+	deck, err := NewDeckFromCSV(filepath)
+	if err != nil {
+		exitWithError(err)
+	}
+	fmt.Fprintf(game.writer, "Welcome to War!\nThis game will be played with %d cards.\n", len(deck))
+
+	game.getPlayers()
+	game.deal(deck)
+
+	return game
+}
+
+func (g Game) getPlayers() {
+	fmt.Fprintf(g.writer, "Enter player %d: ", 1)
+	g.scanner.Scan()
+	g.player1.name = g.scanner.Text()
+
+	fmt.Fprintf(g.writer, "Enter player %d: ", 2)
+	g.scanner.Scan()
+	g.player2.name = g.scanner.Text()
+
+	fmt.Fprintf(g.writer, "The players today are %s and %s.\n",
+		g.player1.name, g.player2.name)
+}
+
+func (g Game) deal(deck Deck) {
+	deck.Shuffle()
+	for i := 0; i < len(deck); i++ {
+		switch i%2 == 0 {
+		case true:
+			g.player1.deck.AddCards([]Card{deck[i]})
+		case false:
+			g.player2.deck.AddCards([]Card{deck[i]})
 		}
 	}
 }
 
-func NewPlayers(cards []Card) (Player, Player) {
-	// shuffle cards
-	r := rand.New(rand.NewSource(time.Now().Unix()))
-	for i := len(cards); i > 0; i-- {
-		randIndex := r.Intn(i)
-		cards[i-1], cards[randIndex] = cards[randIndex], cards[i-1]
-	}
-	return Player{"Cacco", &Deck{cards[:26]}}, Player{"Pickles", &Deck{cards[26:]}}
-}
-
-func NewDeck() []Card {
-	suits := []string{"heart", "spade", "diamond", "club"}
-	values := map[string]int{
-		"Ace":   14,
-		"King":  13,
-		"Queen": 12,
-		"Jack":  11,
-		"10":    10,
-		"9":     9,
-		"8":     8,
-		"7":     7,
-		"6":     6,
-		"5":     5,
-		"4":     4,
-		"3":     3,
-		"2":     2,
-	}
-
-	var cards []Card
-	for _, suit := range suits {
-		for s, n := range values {
-			cards = append(cards, Card{suit, s, n})
+func (g Game) start() {
+	var cmd string
+	for cmd != "GO" {
+		fmt.Fprint(g.writer, "Type 'GO' to start the game!\n"+
+			strings.Repeat("-", 40)+"\n")
+		g.scanner.Scan()
+		cmd = strings.ToUpper(g.scanner.Text())
+		if cmd == "Q" {
+			return
 		}
 	}
 
-	return cards
+	g.play()
 }
 
-func NewDeckFromCSV(filename string) []Card {
-	file, _ := os.Open(filename)
-	r := csv.NewReader(file)
+func (g Game) play() {
+	for i := 1; !g.player1.HasLost() && !g.player2.HasLost(); i++ {
+		turn := Turn{player1: g.player1, player2: g.player2}
+		fmt.Fprintf(g.writer, "Turn %d: %s has %d cards left and %s has %d cards left\n", i,
+			g.player1.name, g.player1.CardsLeft(),
+			g.player2.name, g.player2.CardsLeft(),
+		)
+		g.showCards(0, "		")
 
-	var cards []Card
-	for {
-		record, err := r.Read()
-		if err == io.EOF {
-			break
+		if turn.Type() != basic {
+			g.war()
 		}
-		rank, _ := strconv.Atoi(record[2])
-		cards = append(cards, Card{record[1], record[0], rank})
+		g.awardSpoils(turn)
+
+		if i%500 == 0 {
+			g.player1.deck.Shuffle()
+			g.player2.deck.Shuffle()
+		}
 	}
-
-	return cards
+	g.displayResult()
 }
 
-func PlayTurn(player1, player2 Player, i int) {
-	t := &Turn{player1, player2, []Card{}}
-	p1 := t.Player1.Name
-	p2 := t.Player2.Name
-	c1 := t.Player1.Deck.Cards[0].String()
-	c2 := t.Player2.Deck.Cards[0].String()
-	fmt.Printf("Turn %d: %s played %s, and %s played %s\n", i, p1, c1, p2, c2)
+func (g Game) showCards(i int, prefix string) {
+	fmt.Fprintf(g.writer, "%s%s played %s and %s played %s\n",
+		prefix,
+		g.player1.name, (*g.player1.deck)[i],
+		g.player2.name, (*g.player2.deck)[i],
+	)
+}
 
-	switch t.Type() {
-	case "basic":
-		BasicTurn(t)
-	case "war":
-		WarTurn(t)
-	case "mutually assured destruction":
-		MADTurn(t)
+func (g Game) canPlayWar() bool {
+	var canPlayWar = true
+	for _, player := range []*Player{g.player1, g.player2} {
+		if player.CardsLeft() <= 3 {
+			fmt.Fprintf(g.writer, "		%s does not have enough cards for war!\n", player.name)
+			player.lost = true
+			canPlayWar = false
+		}
 	}
+	return canPlayWar
 }
 
-func BasicTurn(t *Turn) {
-	winner := t.Winner()
-	fmt.Printf("   %s won 2 cards\n", winner.Name)
-	t.PileCards()
-	t.AwardSpoils(winner)
-}
-
-func WarTurn(t *Turn) {
-	p1 := t.Player1.Name
-	p2 := t.Player2.Name
-	winner := t.Winner()
-	if len(t.Player2.Deck.Cards) < 3 {
-		fmt.Printf("   WAR - %s doesn't have enough cards!\n", p2)
-		t.PileCards()
-	} else if len(t.Player1.Deck.Cards) < 3 {
-		fmt.Printf("   WAR - %s doesn't have enough cards!\n", p1)
-		t.PileCards()
-	} else {
-		c1 := t.Player1.Deck.Cards[2].String()
-		c2 := t.Player2.Deck.Cards[2].String()
-		fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
-		fmt.Printf("   %s won 6 cards\n", winner.Name)
-		t.PileCards()
-		t.AwardSpoils(winner)
+func (g Game) war() {
+	if canPlayWar := g.canPlayWar(); !canPlayWar {
+		return
+	}
+	for i := 3; i > 0; i-- {
+		g.showCards(i, "	WAR!	")
+		if g.player1.deck.RankofCardAt(i) != g.player2.deck.RankofCardAt(i) {
+			return
+		}
 	}
 }
 
-func MADTurn(t *Turn) {
-	p1 := t.Player1.Name
-	p2 := t.Player2.Name
-	c1 := t.Player1.Deck.Cards[2].String()
-	c2 := t.Player2.Deck.Cards[2].String()
-	t.PileCards()
-	fmt.Printf("   WAR - %s played %s, and %s played %s\n", p1, c1, p2, c2)
-	fmt.Println("   *mutually assured destruction* 6 cards removed from play")
+func (g Game) awardSpoils(turn Turn) {
+	winner := turn.Winner()
+	turnType := turn.Type()
+	turn.PileCards()
+	turn.AwardSpoils(winner)
+	switch turnType {
+	case mutuallyAssuredDestruction:
+		fmt.Fprintf(g.writer, "		*mutually assured destruction* %d cards removed from play\n\n", len(turn.spoilsOfWar))
+	default:
+		fmt.Fprintf(g.writer, "		%s won %d cards\n\n", winner.name, len(turn.spoilsOfWar))
+	}
 }
 
-func GameOver(player1, player2 Player, i int) bool {
-	if player1.HasLost() {
-		fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", player2.Name)
-		return true
-	}
-	if player2.HasLost() {
-		fmt.Printf("*~*~*~* %s has won the game! *~*~*~*", player1.Name)
-		return true
+func (g Game) displayResult() {
+	for _, player := range []*Player{g.player1, g.player2} {
+		if player.CardsLeft() == 0 {
+			fmt.Fprintf(g.writer, "%s is out of cards!\n", player.name)
+		}
+		if !player.HasLost() {
+			defer fmt.Fprintf(g.writer, "*~*~*~* %s won the game! *~*~*~*\n", player.name)
+		}
 	}
 
-	l1 := len(player1.Deck.Cards)
-	l2 := len(player2.Deck.Cards)
-	fmt.Printf("   %s has %d cards and %s has %d cards\n", player1.Name, l1, player2.Name, l2)
-	if i == 10_000 {
-		fmt.Printf("Maxiumum turns exceeded.\nGame Over!")
+	if g.player1.HasLost() && g.player2.HasLost() {
+		fmt.Fprintf(g.writer, "*~*~*~* It's a draw! *~*~*~*\n")
 	}
-	return false
 }

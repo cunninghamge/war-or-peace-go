@@ -1,150 +1,116 @@
 package main
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
 
-func TestCard(t *testing.T) {
-	card := Card{
-		"heart",
-		"Jack",
-		11,
+func TestRankOfCardAt(t *testing.T) {
+	t.Run("with cards", func(t *testing.T) {
+		for i, card := range testCards {
+			rank := testDeck.RankofCardAt(i)
+			if rank != card.rank {
+				t.Errorf("got %d want %d", rank, card.rank)
+			}
+		}
+	})
+
+	t.Run("with insufficient cards", func(t *testing.T) {
+		rank := testDeck.RankofCardAt(4)
+		if rank != 0 {
+			t.Errorf("got %d want %d", rank, 0)
+		}
+	})
+}
+
+func TestRemoveCard(t *testing.T) {
+	deck := Deck(testCards)
+	removed := deck.RemoveCard()
+	if removed != testCards[0] {
+		t.Errorf("got %v want %v for remove card", removed, testCards[0])
 	}
 
-	if card.Suit != "heart" {
-		t.Errorf("got %s want %s for card suit", card.Suit, "heart")
-	}
-
-	if card.Value != "Jack" {
-		t.Errorf("got %s want %s for card value", card.Value, "Jack")
-	}
-
-	if card.Rank != 11 {
-		t.Errorf("got %d want %d for card rank", card.Rank, 11)
+	want := Deck(testCards[1:])
+	if !reflect.DeepEqual(deck, want) {
+		t.Errorf("%v should have been removed from deck but was not", testCards[0])
 	}
 }
 
-func TestString(t *testing.T) {
-	card1 := Card{"diamond", "Queen", 12}
-	card2 := Card{"spade", "3", 3}
-	card3 := Card{"heart", "Ace", 14}
+func TestAddCards(t *testing.T) {
+	deck := Deck{testCards[1], testCards[2]}
+	card4 := Card{"5", "club", 5}
 
-	got := card1.String()
-	want := "the Queen of diamonds"
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
-	}
+	deck.AddCards([]Card{card4})
 
-	got = card2.String()
-	want = "the 3 of spades"
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
-	}
-
-	got = card3.String()
-	want = "the Ace of hearts"
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
+	want := Deck{testCards[1], testCards[2], card4}
+	if !reflect.DeepEqual(deck, want) {
+		t.Errorf("got %v want %v for deck after adding new card", deck, want)
 	}
 }
 
-func TestDeck(t *testing.T) {
-	card1 := Card{"diamond", "Queen", 12}
-	card2 := Card{"spade", "3", 3}
-	card3 := Card{"heart", "Ace", 14}
-	deck := &Deck{
-		[]Card{card1, card2, card3},
+func TestShuffle(t *testing.T) {
+	deck := Deck{testCards[0], testCards[1], testCards[2]}
+	for i := 0; i < 30; i++ {
+		shuffledDeck := make(Deck, len(deck))
+		copy(shuffledDeck, deck)
+		shuffledDeck.Shuffle()
+		if !reflect.DeepEqual(deck, shuffledDeck) {
+			return
+		}
 	}
 
-	t.Run("deck.Cards", func(t *testing.T) {
-		want := []Card{card1, card2, card3}
-		if !reflect.DeepEqual(deck.Cards, want) {
-			t.Errorf("got %v want %v for deck cards", deck.Cards, want)
-		}
-	})
+	t.Error("failed to randomize card order")
+}
 
-	t.Run("deck.RankofCardAt", func(t *testing.T) {
-		rank, err := deck.RankofCardAt(0)
-		if rank != card1.Rank {
-			t.Errorf("got %v want %v for rank of card at 0", rank, card1.Rank)
-		}
-		if err != nil {
-			t.Errorf("did not expect an error but got one")
-		}
+func TestNewDeckFromCSV(t *testing.T) {
+	os.WriteFile("reader_err.csv", []byte("a,b,c\nd,e"), 0644)
+	defer os.Remove("reader_err.csv")
+	os.WriteFile("card_err.csv", []byte("a,b\nd,e"), 0644)
+	defer os.Remove("card_err.csv")
 
-		rank, err = deck.RankofCardAt(2)
-		if rank != card3.Rank {
-			t.Errorf("got %v want %v for rank of card at 2", rank, card3.Rank)
-		}
-		if err != nil {
-			t.Errorf("did not expect an error but got one")
-		}
-	})
+	testCases := map[string]struct {
+		length   int
+		filepath string
+		wantErr  bool
+	}{
+		"with a file": {
+			filepath: "fixtures/two_cards.csv",
+			length:   2,
+		},
+		"using default file": {
+			filepath: "",
+			length:   52,
+		},
+		"with file reading error": {
+			filepath: "reader_err.csv",
+			wantErr:  true,
+		},
+		"card creation error": {
+			filepath: "card_err.csv",
+			wantErr:  true,
+		},
+	}
 
-	t.Run("RankofCardAt returns error if not enough cards", func(t *testing.T) {
-		_, err := deck.RankofCardAt(5)
-		if err == nil {
-			t.Errorf("expected error but got none")
-		}
-	})
+	for _, tc := range testCases {
+		t.Run(tc.filepath, func(t *testing.T) {
+			deck, err := NewDeckFromCSV(tc.filepath)
 
-	t.Run("deck.HighRankingCards", func(t *testing.T) {
-		got := deck.HighRankingCards()
-		want := []Card{card1, card3}
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %v want %v for high ranking cards", got, want)
-		}
-	})
-
-	t.Run("deck.PercentHighRanking", func(t *testing.T) {
-		got := deck.PercentHighRanking()
-		want := 66.67
-		if got != want {
-			t.Errorf("got %f want %f for percent high ranking", got, want)
-		}
-	})
-
-	t.Run("deck.RemoveCard", func(t *testing.T) {
-		removed := deck.RemoveCard()
-		if removed != card1 {
-			t.Errorf("got %v want %v for remove card", removed, card1)
-		}
-
-		want := []Card{card2, card3}
-		if !reflect.DeepEqual(deck.Cards, want) {
-			t.Errorf("%v should have been removed from deck but was not", card1)
-		}
-
-		got := deck.HighRankingCards()
-		if !reflect.DeepEqual(got, []Card{card3}) {
-			t.Errorf("got %v want %v for new high ranking cards", got, []Card{card3})
-		}
-
-		newPct := deck.PercentHighRanking()
-		if newPct != 50.00 {
-			t.Errorf("newPct %f want %f for new percent high ranking", newPct, 50.00)
-		}
-	})
-
-	t.Run("deck.AddCard", func(t *testing.T) {
-		card4 := Card{"club", "5", 5}
-
-		deck.AddCard(card4)
-
-		want := []Card{card2, card3, card4}
-		if !reflect.DeepEqual(deck.Cards, want) {
-			t.Errorf("got %v want %v for deck after adding new card", deck.Cards, want)
-		}
-
-		got := deck.HighRankingCards()
-		if !reflect.DeepEqual(got, []Card{card3}) {
-			t.Errorf("got %v want %v for new high ranking cards", got, []Card{card3})
-		}
-
-		newPct := deck.PercentHighRanking()
-		if newPct != 33.33 {
-			t.Errorf("newPct %f want %f for new percent high ranking", newPct, 33.33)
-		}
-	})
+			switch tc.wantErr {
+			case true:
+				if err == nil {
+					t.Errorf("expected an error but didn't get one")
+				}
+			default:
+				got := len(deck)
+				want := tc.length
+				if got != want {
+					t.Errorf("got %d want %d", got, want)
+				}
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			}
+		})
+	}
 }

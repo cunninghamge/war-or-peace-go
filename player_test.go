@@ -1,36 +1,41 @@
 package main
 
 import (
-	"reflect"
 	"testing"
 )
 
-func TestPlayer(t *testing.T) {
-	card1 := Card{"diamond", "Queen", 12}
-	card2 := Card{"spade", "3", 3}
-	card3 := Card{"heart", "Ace", 14}
-	deck := &Deck{
-		[]Card{card1, card2, card3},
+func TestCardsLeft(t *testing.T) {
+	deck := Deck(testCards)
+	player := Player{name: "Clarissa", deck: &deck}
+
+	for i := len(deck); i > 0; i-- {
+		if player.CardsLeft() != i {
+			t.Errorf("got %d want %d", player.CardsLeft(), i)
+		}
+		player.deck.RemoveCard()
 	}
-	player := Player{"Clarissa", deck}
+}
 
-	t.Run("attributes", func(t *testing.T) {
-		if player.Name != "Clarissa" {
-			t.Errorf("got %q want %q for player name", player.Name, "Clarissa")
-		}
+func TestHasLost(t *testing.T) {
+	t.Run("with no cards", func(t *testing.T) {
+		deck := Deck(testCards)
+		player := Player{name: "Clarissa", deck: &deck}
 
-		if !reflect.DeepEqual(player.Deck, deck) {
-			t.Errorf("got %v, want %v for player deck", player.Deck, deck)
-		}
-	})
-
-	t.Run("player loses when they run out of cards", func(t *testing.T) {
-		for i := 0; i < 3; i++ {
+		for i := 0; i < 4; i++ {
 			if player.HasLost() {
 				t.Errorf("player has lost but still has cards")
 			}
-			player.Deck.RemoveCard()
+			player.deck.RemoveCard()
 		}
+
+		if !player.HasLost() {
+			t.Errorf("player has not lost but has no cards")
+		}
+	})
+
+	t.Run("with cards", func(t *testing.T) {
+		deck := Deck(testCards)
+		player := Player{name: "Clarissa", deck: &deck, lost: true}
 
 		if !player.HasLost() {
 			t.Errorf("player has not lost but has no cards")

@@ -1,54 +1,57 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	"math"
+	"math/rand"
+	"time"
+	"war-or-peace/reader"
 )
 
-type Card struct {
-	Suit  string
-	Value string
-	Rank  int
-}
+type Deck []Card
 
-func (c Card) String() string {
-	return fmt.Sprintf("the %s of %ss", c.Value, c.Suit)
-}
-
-type Deck struct {
-	Cards []Card
-}
-
-func (d Deck) RankofCardAt(index int) (int, error) {
-	if len(d.Cards) <= index {
-		return 0, errors.New("not enough cards")
+func (d Deck) RankofCardAt(index int) int {
+	if len(d) <= index {
+		return 0
 	}
-	return d.Cards[index].Rank, nil
-}
-
-func (d Deck) HighRankingCards() []Card {
-	var cards []Card
-	for _, card := range d.Cards {
-		if card.Rank >= 11 {
-			cards = append(cards, card)
-		}
-	}
-	return cards
-}
-
-func (d Deck) PercentHighRanking() float64 {
-	numHighRanking := float64(len(d.HighRankingCards()))
-	numCards := float64(len(d.Cards))
-	return math.Round((numHighRanking/numCards*100.00)/0.01) * 0.01
+	return d[index].rank
 }
 
 func (d *Deck) RemoveCard() Card {
-	card := d.Cards[0]
-	d.Cards = d.Cards[1:]
+	cards := *d
+	card, cards := cards[0], cards[1:]
+	*d = cards
 	return card
 }
 
-func (d *Deck) AddCard(card Card) {
-	d.Cards = append(d.Cards, card)
+func (d *Deck) AddCards(newCards []Card) {
+	cards := []Card{}
+	cards = append(cards, *d...)
+	cards = append(cards, newCards...)
+	*d = cards
+}
+
+func (d *Deck) Shuffle() {
+	cards := *d
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(cards), func(i, j int) {
+		cards[i], cards[j] = cards[j], cards[i]
+	})
+	*d = cards
+}
+
+func NewDeckFromCSV(filepath string) (Deck, error) {
+	var source = "fixtures/cards.csv"
+	if len(filepath) > 0 {
+		source = filepath
+	}
+	records, err := reader.ReadFile(source)
+	if err != nil {
+		return nil, err
+	}
+
+	cards, err := createCards(records)
+	if err != nil {
+		return nil, err
+	}
+
+	return Deck(cards), nil
 }
